@@ -1,0 +1,79 @@
+- generic [active] [ref=f17e1]:
+  - generic [ref=f17e2]:
+    - complementary [ref=f17e3]:
+      - generic [ref=f17e4]: sales-flow
+      - navigation [ref=f17e7]:
+        - link "仪表盘" [ref=f17e8] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=f17e14] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=f17e19] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=f17e25] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=f17e29] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=f17e33] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=f17e37] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=f17e40] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=f17e46]:
+      - banner [ref=f17e47]:
+        - generic [ref=f17e48]: 管理员
+        - generic [ref=f17e49]: 管理员
+        - button "登出" [ref=f17e51]
+      - main [ref=f17e52]:
+        - generic [ref=f17e134]:
+          - generic [ref=f17e135]:
+            - generic [ref=f17e136]:
+              - link "← 卖出单" [ref=f17e137] [cursor=pointer]:
+                - /url: /sales
+              - heading "SO-20260910-001" [level=1] [ref=f17e138]
+              - generic [ref=f17e139]: 有效
+            - generic [ref=f17e140]:
+              - link "复制重开" [ref=f17e141] [cursor=pointer]:
+                - /url: /sales/new?copyFrom=cmtv57gjq000cel92qv0nwdma
+              - button "作废" [ref=f17e142]
+          - generic [ref=f17e143]:
+            - generic [ref=f17e144]: 单据信息
+            - generic [ref=f17e146]:
+              - paragraph [ref=f17e147]: 日期：2026-09-10
+              - paragraph [ref=f17e148]: 客户：John's Repair Shop
+              - paragraph [ref=f17e149]: 联系方式：555-1234, 123 Main St, LA
+              - paragraph [ref=f17e150]: 总金额：$150.00
+              - paragraph [ref=f17e151]: 自营毛利：$100.00
+              - paragraph [ref=f17e152]: 录单人：管理员
+          - table [ref=f17e155]:
+            - rowgroup [ref=f17e156]:
+              - row [ref=f17e157]:
+                - columnheader "配件号" [ref=f17e158]
+                - columnheader "名称" [ref=f17e159]
+                - columnheader "数量" [ref=f17e160]
+                - columnheader "售价" [ref=f17e161]
+                - columnheader "小计" [ref=f17e162]
+                - columnheader "成本/件" [ref=f17e163]
+                - columnheader "成本合计" [ref=f17e164]
+                - columnheader "毛利" [ref=f17e165]
+            - rowgroup [ref=f17e166]:
+              - row [ref=f17e167]:
+                - cell [ref=f17e168]:
+                  - link "BR-1001" [ref=f17e169] [cursor=pointer]:
+                    - /url: /parts/cmtv4l08o0000el92zyeznoik
+                - cell "刹车片 前轮" [ref=f17e170]
+                - cell "5" [ref=f17e171]
+                - cell "$30.00" [ref=f17e172]
+                - cell "$150.00" [ref=f17e173]
+                - cell "$10.00" [ref=f17e174]
+                - cell "$50.00" [ref=f17e175]
+                - cell "$100.00" [ref=f17e176]
+              - row [ref=f17e177]:
+                - cell "合计" [ref=f17e178]
+                - cell "$150.00" [ref=f17e179]
+                - cell [ref=f17e180]
+                - cell "$100.00" [ref=f17e181]
+          - paragraph [ref=f17e182]: 成本为卖出当时的加权平均成本快照，不随后续进货变化。
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f17e97] [cursor=pointer]
+  - alert [ref=f17e101]: SO-20260910-001

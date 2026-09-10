@@ -1,0 +1,73 @@
+- generic [ref=f17e1]:
+  - generic [ref=f17e2]:
+    - complementary [ref=f17e3]:
+      - generic [ref=f17e4]: sales-flow
+      - navigation [ref=f17e7]:
+        - link "仪表盘" [ref=f17e8] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=f17e14] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=f17e19] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=f17e25] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=f17e29] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=f17e33] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=f17e37] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=f17e40] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=f17e46]:
+      - banner [ref=f17e47]:
+        - generic [ref=f17e48]: 管理员
+        - generic [ref=f17e49]: 管理员
+        - button "登出" [ref=f17e51]
+      - main [ref=f17e52]:
+        - generic [ref=f17e53]:
+          - heading "新建卖出单" [level=1] [ref=f17e54]
+          - generic [ref=f17e55]:
+            - generic [ref=f17e56]:
+              - generic [ref=f17e57]:
+                - generic [ref=f17e58]: 日期 *
+                - textbox "日期 *" [ref=f17e59]: 2026-09-10
+              - generic [ref=f17e60]:
+                - generic [ref=f17e61]: 客户 *
+                - textbox "客户 *" [ref=f17e62]:
+                  - /placeholder: 卖给谁
+                  - text: John's Repair Shop
+              - generic [ref=f17e63]:
+                - generic [ref=f17e64]: 客户联系方式
+                - textbox "客户联系方式" [ref=f17e65]:
+                  - /placeholder: 电话 / 邮箱 / 地址（开发票时用）
+                  - text: 555-1234, 123 Main St, LA
+            - generic [ref=f17e67]:
+              - generic [ref=f17e68]:
+                - generic [ref=f17e69]: 配件
+                - generic [ref=f17e70]: 数量
+                - generic [ref=f17e71]: 单价($)
+                - generic [ref=f17e72]: 小计
+              - generic [ref=f17e73]:
+                - combobox [active] [ref=f17e75]:
+                  - generic [ref=f17e76]:
+                    - generic [ref=f17e124]: BR-1001
+                    - generic [ref=f17e125]: 刹车片 前轮
+                - textbox "0" [ref=f17e77]
+                - textbox "0.00" [ref=f17e78]
+                - generic [ref=f17e79]: "-"
+                - button "删除该行" [ref=f17e80]
+              - generic [ref=f17e81]:
+                - generic [ref=f17e82]:
+                  - button "加一行" [ref=f17e83]
+                  - button "快速新建配件" [ref=f17e84]
+                - paragraph [ref=f17e85]:
+                  - text: 合计：
+                  - generic [ref=f17e86]: $0.00
+            - generic [ref=f17e87]:
+              - generic [ref=f17e88]: 备注
+              - textbox "备注" [ref=f17e89]
+            - button "保存卖出单" [ref=f17e91]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f17e97] [cursor=pointer]
+  - alert [ref=f17e101]
