@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +5,195 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum OrderStatus {
+  ACTIVE
+  VOID
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  ONLINE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(STAFF)
+  isActive     Boolean  @default(true) // 停用而非删除（历史单据引用存在）
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  createdPurchases  PurchaseOrder[] @relation("PurchaseCreator")
+  createdSales      SaleOrder[]     @relation("SaleCreator")
+  voidedPurchases   PurchaseOrder[] @relation("PurchaseVoider")
+  voidedSales       SaleOrder[]     @relation("SaleVoider")
+  invoicedSales     SaleOrder[]     @relation("InvoiceIssuer")
+  payments          Payment[]
+  stockAdjustments  StockAdjustment[]
+}
+
+model Part {
+  id            String   @id @default(cuid())
+  partNumber    String   @unique
+  name          String
+  brand         String? // 品牌；明治 → 寄卖
+  description   String? // 规格 / 适配车型备注
+  isConsignment Boolean  @default(false) // 寄卖件：不进成本/利润体系，入库走库存调整
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  inventory     Inventory?
+  purchaseLines PurchaseOrderLine[]
+  saleLines     SaleOrderLine[]
+  adjustments   StockAdjustment[]
+
+  @@index([isConsignment])
+  @@index([name])
+}
+
+model Inventory {
+  id        String   @id @default(cuid())
+  partId    String   @unique
+  part      Part     @relation(fields: [partId], references: [id])
+  qty       Int      @default(0) // 允许负（先卖后入库）；寄卖件理论上不应为负
+  avgCost   Decimal  @default(0) @db.Decimal(14, 4) // 加权平均成本；寄卖件恒为 0
+  updatedAt DateTime @updatedAt
+
+  @@index([qty]) // 负库存 / 低库存筛查
+}
+
+model PurchaseOrder {
+  id           String      @id @default(cuid())
+  orderNo      String      @unique // PO-20260910-001
+  orderDate    DateTime // 仅日期部分（页面日期选择器给零点）
+  supplierName String
+  note         String?
+  status       OrderStatus @default(ACTIVE)
+  totalAmount  Decimal     @default(0) @db.Decimal(14, 2) // Σ lineTotal，事务内计算
+  voidReason   String?
+  voidedAt     DateTime?
+  voidedById   String?
+  voidedBy     User?       @relation("PurchaseVoider", fields: [voidedById], references: [id])
+  createdById  String
+  createdBy    User        @relation("PurchaseCreator", fields: [createdById], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  lines    PurchaseOrderLine[]
+  payments Payment[] // Σ=已付；totalAmount − Σ = 应付欠款
+
+  @@index([orderDate, status])
+  @@index([supplierName])
+  @@index([status])
+}
+
+model PurchaseOrderLine {
+  id        String        @id @default(cuid())
+  orderId   String
+  order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  partId    String
+  part      Part          @relation(fields: [partId], references: [id])
+  qty       Int // > 0；action 层校验 part 非寄卖
+  unitPrice Decimal       @db.Decimal(12, 2)
+  lineTotal Decimal       @db.Decimal(14, 2) // = qty × unitPrice
+
+  @@index([orderId])
+  @@index([partId])
+}
+
+model SaleOrder {
+  id                   String      @id @default(cuid())
+  orderNo              String      @unique // SO-20260910-001
+  orderDate            DateTime
+  customerName         String
+  customerContact      String? // 电话/邮箱/地址，开票 PDF 用
+  note                 String?
+  status               OrderStatus @default(ACTIVE)
+  totalAmount          Decimal     @default(0) @db.Decimal(14, 2)
+  // 开票：invoiceNo 为 null 即未开票（单一事实来源，不另设状态枚举）
+  invoiceNo            String?     @unique // INV-20260910-001
+  invoiceDate          DateTime?
+  invoicedAt           DateTime?
+  invoicedById         String?
+  invoicedBy           User?       @relation("InvoiceIssuer", fields: [invoicedById], references: [id])
+  lastRevokedInvoiceNo String? // 撤销开票的轻量审计
+  voidReason           String?
+  voidedAt             DateTime?
+  voidedById           String?
+  voidedBy             User?       @relation("SaleVoider", fields: [voidedById], references: [id])
+  createdById          String
+  createdBy            User        @relation("SaleCreator", fields: [createdById], references: [id])
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  lines    SaleOrderLine[]
+  payments Payment[] // Σ=已收；totalAmount − Σ = 应收欠款
+
+  @@index([orderDate, status])
+  @@index([status, invoiceNo]) // 开票管理页「未开票 ACTIVE」筛选
+  @@index([customerName])
+}
+
+model SaleOrderLine {
+  id            String    @id @default(cuid())
+  orderId       String
+  order         SaleOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  partId        String
+  part          Part      @relation(fields: [partId], references: [id])
+  qty           Int // > 0（负库存是库存结果，不是负数量卖出）
+  unitPrice     Decimal   @db.Decimal(12, 2)
+  lineTotal     Decimal   @db.Decimal(14, 2) // 售价小计
+  isConsignment Boolean   @default(false) // 行级快照：报表不受档案后续改动影响
+  costAtSale    Decimal   @db.Decimal(14, 4) // 寄卖行=0；自营行=卖出时 avgCost 快照，永不重算
+  costTotal     Decimal   @db.Decimal(14, 2) // = round(costAtSale × qty, 2) half-up
+
+  @@index([orderId])
+  @@index([partId])
+}
+
+// 收付款记录：卖出单收款（钱入）/ 买入单付款（钱出），二选一（应用层校验）
+model Payment {
+  id              String         @id @default(cuid())
+  method          PaymentMethod // CASH 现金 / CHECK 支票 / ONLINE 线上
+  amount          Decimal        @db.Decimal(12, 2) // > 0
+  payDate         DateTime // 收/付日期，默认今天
+  note            String? // 支票号等
+  saleOrderId     String?
+  saleOrder       SaleOrder?     @relation(fields: [saleOrderId], references: [id], onDelete: Cascade)
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  createdById     String
+  createdBy       User           @relation(fields: [createdById], references: [id])
+  createdAt       DateTime       @default(now())
+
+  @@index([payDate, method])
+  @@index([saleOrderId])
+  @@index([purchaseOrderId])
+}
+
+// 库存调整：仅限寄卖配件（明治件入库/退回），只动数量不记钱
+model StockAdjustment {
+  id          String   @id @default(cuid())
+  partId      String
+  part        Part     @relation(fields: [partId], references: [id])
+  qty         Int // + 入库 / − 退回
+  reason      String?
+  adjDate     DateTime
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([partId])
+  @@index([adjDate])
 }
