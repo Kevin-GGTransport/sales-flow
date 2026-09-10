@@ -1,0 +1,15 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: sales-flow
+        - generic [ref=e6]: 汽车配件买卖 · 库存 · 销账 · 开票
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]: 用户名
+          - textbox "用户名" [active] [ref=e11]
+        - generic [ref=e12]:
+          - generic [ref=e13]: 密码
+          - textbox "密码" [ref=e14]
+        - button "登录" [ref=e15]
+  - region "Notifications alt+T"

@@ -1,0 +1,33 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e26]:
+    - complementary [ref=e27]:
+      - generic [ref=e28]: sales-flow
+      - navigation [ref=e31]:
+        - link "仪表盘" [ref=e32] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=e38] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=e43] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=e49] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=e53] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=e57] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=e61] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=e64] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=e70]:
+      - banner [ref=e71]:
+        - generic [ref=e72]: 管理员
+        - generic [ref=e73]: 管理员
+        - button "登出" [ref=e75]
+      - main [ref=e76]:
+        - generic [ref=e77]:
+          - heading "仪表盘" [level=1] [ref=e78]
+          - paragraph [ref=e79]: 你好，管理员。概览卡片将在后续步骤补齐。
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]
+  - alert [ref=e25]

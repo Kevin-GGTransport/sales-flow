@@ -1,0 +1,17 @@
+- generic [ref=e1]:
+  - main [ref=e80]:
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - generic [ref=e83]: sales-flow
+        - generic [ref=e84]: 汽车配件买卖 · 库存 · 销账 · 开票
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]: 用户名
+          - textbox "用户名" [active] [ref=e89]
+        - generic [ref=e90]:
+          - generic [ref=e91]: 密码
+          - textbox "密码" [ref=e92]
+        - button "登录" [ref=e93]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]
+  - alert [ref=e25]
