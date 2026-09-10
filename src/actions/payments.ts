@@ -35,7 +35,8 @@ export async function addPayment(input: {
     const amount = new Decimal(data.amount);
     const payDate = dateToUtcMidnight(data.payDate);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(
+      async (tx) => {
       // 先锁单据行，再聚合已收/付，防并发超额
       const order = hasSale
         ? await tx.saleOrder.findUnique({ where: { id: data.saleOrderId! } })
@@ -78,7 +79,9 @@ export async function addPayment(input: {
           createdById: user.id,
         },
       });
-    });
+      },
+      { maxWait: 10_000, timeout: 30_000 },
+    );
 
     revalidatePath("/payments");
     if (data.saleOrderId) revalidatePath(`/sales/${data.saleOrderId}`);

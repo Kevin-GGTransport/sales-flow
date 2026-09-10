@@ -132,12 +132,15 @@ function isDeadlock(e: unknown): boolean {
   );
 }
 
+/** 事务等待参数：Neon pooler 偶发池满，多等一会再报错 */
+const TX_OPTIONS = { maxWait: 10_000, timeout: 30_000 } as const;
+
 /** P2034（死锁）整体重开事务重试一次 */
 export async function withTxRetry<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
   try {
-    return await prisma.$transaction(fn);
+    return await prisma.$transaction(fn, TX_OPTIONS);
   } catch (e) {
-    if (isDeadlock(e)) return prisma.$transaction(fn);
+    if (isDeadlock(e)) return prisma.$transaction(fn, TX_OPTIONS);
     throw e;
   }
 }

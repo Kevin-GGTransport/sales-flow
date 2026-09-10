@@ -1,0 +1,71 @@
+- generic [active] [ref=f13e1]:
+  - generic [ref=f13e2]:
+    - complementary [ref=f13e3]:
+      - generic [ref=f13e4]: sales-flow
+      - navigation [ref=f13e7]:
+        - link "仪表盘" [ref=f13e8] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=f13e14] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=f13e19] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=f13e25] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=f13e29] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=f13e33] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=f13e37] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=f13e40] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=f13e46]:
+      - banner [ref=f13e47]:
+        - generic [ref=f13e48]: 管理员
+        - generic [ref=f13e49]: 管理员
+        - button "登出" [ref=f13e51]
+      - main [ref=f13e52]:
+        - generic [ref=f13e53]:
+          - generic [ref=f13e54]:
+            - heading "配件" [level=1] [ref=f13e55]
+            - link "新建配件" [ref=f13e56] [cursor=pointer]:
+              - /url: /parts/new
+          - generic [ref=f13e57]:
+            - textbox "搜索配件号 / 名称 / 品牌" [ref=f13e58]
+            - generic [ref=f13e59]:
+              - checkbox "显示已停用" [ref=f13e60]
+              - text: 显示已停用
+            - button "搜索" [ref=f13e61]
+          - table [ref=f13e64]:
+            - rowgroup [ref=f13e65]:
+              - row [ref=f13e66]:
+                - columnheader "配件号" [ref=f13e67]
+                - columnheader "名称" [ref=f13e68]
+                - columnheader "品牌" [ref=f13e69]
+                - columnheader "类型" [ref=f13e70]
+                - columnheader "库存" [ref=f13e71]
+                - columnheader "平均成本" [ref=f13e72]
+                - columnheader "库存价值" [ref=f13e73]
+            - rowgroup [ref=f13e74]:
+              - row [ref=f13e75]:
+                - cell [ref=f13e76]:
+                  - link "BR-1001" [ref=f13e77] [cursor=pointer]:
+                    - /url: /parts/cmtv4l08o0000el92zyeznoik
+                - cell "刹车片 前轮" [ref=f13e78]
+                - cell "Bosch" [ref=f13e79]
+                - cell "自营" [ref=f13e80]
+                - cell "-4" [ref=f13e82]
+                - cell "$5.00" [ref=f13e83]
+                - cell "-$20.00" [ref=f13e84]
+              - row [ref=f13e85]:
+                - cell [ref=f13e86]:
+                  - link "MJ-2001" [ref=f13e87] [cursor=pointer]:
+                    - /url: /parts/cmtv4lowx0002el92txur4d50
+                - cell "机油滤清器" [ref=f13e88]
+                - cell "明治" [ref=f13e89]
+                - cell "寄卖" [ref=f13e90]
+                - cell "4" [ref=f13e92]
+                - cell "-" [ref=f13e93]
+                - cell "-" [ref=f13e94]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f13e100] [cursor=pointer]

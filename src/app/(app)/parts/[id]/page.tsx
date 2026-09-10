@@ -2,10 +2,31 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
+import { formatDateString } from "@/lib/validation";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { EditPartDialog } from "@/components/parts/EditPartDialog";
+import { StockAdjustDialog } from "@/components/parts/StockAdjustDialog";
+
+type HistoryRow = {
+  key: string;
+  date: Date;
+  kind: "IN" | "OUT" | "ADJ";
+  label: string;
+  ref: string;
+  href: string;
+  qty: number;
+  amount: string;
+  voided: boolean;
+};
 
 export default async function PartDetailPage({
   params,
@@ -13,12 +34,57 @@ export default async function PartDetailPage({
   const { id } = await params;
   const part = await prisma.part.findUnique({
     where: { id },
-    include: { inventory: true },
+    include: {
+      inventory: true,
+      purchaseLines: {
+        include: { order: { select: { orderNo: true, orderDate: true, status: true } } },
+      },
+      saleLines: {
+        include: { order: { select: { orderNo: true, orderDate: true, status: true } } },
+      },
+      adjustments: true,
+    },
   });
   if (!part) notFound();
 
   const qty = part.inventory?.qty ?? 0;
   const avg = part.inventory?.avgCost ?? null;
+
+  const history: HistoryRow[] = [
+    ...part.purchaseLines.map((l) => ({
+      key: `p-${l.id}`,
+      date: l.order.orderDate,
+      kind: "IN" as const,
+      label: "买入",
+      ref: l.order.orderNo,
+      href: "#",
+      qty: l.qty,
+      amount: formatUSD(l.lineTotal),
+      voided: l.order.status === "VOID",
+    })),
+    ...part.saleLines.map((l) => ({
+      key: `s-${l.id}`,
+      date: l.order.orderDate,
+      kind: "OUT" as const,
+      label: "卖出",
+      ref: l.order.orderNo,
+      href: "#",
+      qty: -l.qty,
+      amount: formatUSD(l.lineTotal),
+      voided: l.order.status === "VOID",
+    })),
+    ...part.adjustments.map((a) => ({
+      key: `a-${a.id}`,
+      date: a.adjDate,
+      kind: "ADJ" as const,
+      label: "寄卖调整",
+      ref: a.reason ?? "",
+      href: "#",
+      qty: a.qty,
+      amount: "-",
+      voided: false,
+    })),
+  ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
   return (
     <div className="space-y-4">
@@ -35,16 +101,21 @@ export default async function PartDetailPage({
           )}
           {!part.isActive && <Badge variant="destructive">已停用</Badge>}
         </div>
-        <EditPartDialog
-          initial={{
-            id: part.id,
-            partNumber: part.partNumber,
-            name: part.name,
-            brand: part.brand ?? "",
-            description: part.description ?? "",
-            isConsignment: part.isConsignment,
-          }}
-        />
+        <div className="flex gap-2">
+          {part.isConsignment && (
+            <StockAdjustDialog partId={part.id} partNumber={part.partNumber} />
+          )}
+          <EditPartDialog
+            initial={{
+              id: part.id,
+              partNumber: part.partNumber,
+              name: part.name,
+              brand: part.brand ?? "",
+              description: part.description ?? "",
+              isConsignment: part.isConsignment,
+            }}
+          />
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -91,14 +162,47 @@ export default async function PartDetailPage({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">出入历史</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          将随买入单 / 卖出单 / 寄卖调整功能逐步在此展示。
-        </CardContent>
-      </Card>
+      <div className="rounded-lg border">
+        <div className="border-b p-3 text-sm font-medium">出入历史（新→旧）</div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>日期</TableHead>
+              <TableHead>类型</TableHead>
+              <TableHead>单据/说明</TableHead>
+              <TableHead className="text-right">数量变动</TableHead>
+              <TableHead className="text-right">金额</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {history.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-16 text-center text-muted-foreground">
+                  还没有出入记录
+                </TableCell>
+              </TableRow>
+            ) : (
+              history.map((row) => (
+                <TableRow key={row.key} className={row.voided ? "opacity-50" : ""}>
+                  <TableCell>{formatDateString(row.date)}</TableCell>
+                  <TableCell>{row.label}{row.voided && "（已作废）"}</TableCell>
+                  <TableCell>{row.ref || "-"}</TableCell>
+                  <TableCell
+                    className={
+                      row.qty >= 0
+                        ? "text-right tabular-nums text-primary"
+                        : "text-right tabular-nums text-muted-foreground"
+                    }
+                  >
+                    {row.qty > 0 ? `+${row.qty}` : row.qty}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{row.amount}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,106 @@
+- generic:
+  - generic [aria-hidden]:
+    - complementary:
+      - generic: sales-flow
+      - navigation:
+        - link:
+          - /url: /
+          - text: 仪表盘
+        - link:
+          - /url: /parts
+          - text: 配件
+        - link:
+          - /url: /purchases
+          - text: 买入单
+        - link:
+          - /url: /sales
+          - text: 卖出单
+        - link:
+          - /url: /payments
+          - text: 销账
+        - link:
+          - /url: /invoices
+          - text: 开票
+        - link:
+          - /url: /reports
+          - text: 统计
+        - link:
+          - /url: /users
+          - text: 用户管理
+    - generic:
+      - banner:
+        - generic: 管理员
+        - generic: 管理员
+        - generic:
+          - button: 登出
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - link:
+                - /url: /parts
+                - text: ← 配件
+              - heading [level=1]: MJ-2001
+              - generic: 寄卖
+            - generic:
+              - button [expanded]: 寄卖入库/退回
+              - button: 编辑
+          - generic:
+            - generic:
+              - generic: 库存数量
+              - generic:
+                - paragraph: "10"
+            - generic:
+              - generic: 平均成本
+              - generic:
+                - paragraph: "-"
+            - generic:
+              - generic: 库存价值
+              - generic:
+                - paragraph: "-"
+          - generic:
+            - generic: 档案
+            - generic:
+              - paragraph: 名称：机油滤清器
+              - paragraph: 品牌：明治
+              - paragraph: 备注：
+          - generic:
+            - generic: 出入历史（新→旧）
+            - generic:
+              - table:
+                - rowgroup:
+                  - row:
+                    - columnheader: 日期
+                    - columnheader: 类型
+                    - columnheader: 单据/说明
+                    - columnheader: 数量变动
+                    - columnheader: 金额
+                - rowgroup:
+                  - row:
+                    - cell: 2026-09-10
+                    - cell: 寄卖调整
+                    - cell: 明治第一批到货
+                    - cell: "+10"
+                    - cell: "-"
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f9e104] [cursor=pointer]
+  - alert
+  - dialog [ref=f9e150]:
+    - generic [ref=f9e151]:
+      - heading "寄卖入库 / 退回（MJ-2001）" [level=2] [ref=f9e152]
+      - paragraph [ref=f9e153]: 只记数量不记钱。正数 = 明治的件送来了；负数 = 退回给寄卖方。
+    - generic [ref=f9e154]:
+      - generic [ref=f9e155]:
+        - generic [ref=f9e156]: 数量（退回用负数，如 -3）*
+        - textbox "数量（退回用负数，如 -3）*" [active] [ref=f9e157]:
+          - /placeholder: 如 10 或 -3
+      - generic [ref=f9e158]:
+        - generic [ref=f9e159]: 日期
+        - textbox "日期" [ref=f9e160]: 2026-09-10
+      - generic [ref=f9e161]:
+        - generic [ref=f9e162]: 备注
+        - textbox "备注" [ref=f9e163]:
+          - /placeholder: 如 新一批到货
+      - button "保存" [ref=f9e164]
+    - button "取消" [ref=f9e166]
+    - button "Close" [ref=f9e167]

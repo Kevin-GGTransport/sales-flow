@@ -1,0 +1,24 @@
+[    2520ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    2532ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  346028ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  346033ms] [LOG] [Fast Refresh] done in 106ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  581982ms] [ERROR] WebSocket connection to 'ws://localhost:3002/_next/hmr?id=Dd1ocLC42LiiKEENvEGYF' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_client_0_90u2t._.js:16348
+[  582990ms] [ERROR] WebSocket connection to 'ws://localhost:3002/_next/hmr?id=Dd1ocLC42LiiKEENvEGYF' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_client_0_90u2t._.js:16348
+[  583994ms] [ERROR] WebSocket connection to 'ws://localhost:3002/_next/hmr?id=Dd1ocLC42LiiKEENvEGYF' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_client_0_90u2t._.js:16348
+[  585004ms] [ERROR] WebSocket connection to 'ws://localhost:3002/_next/hmr?id=Dd1ocLC42LiiKEENvEGYF' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_client_0_90u2t._.js:16348
+[  586028ms] [ERROR] WebSocket connection to 'ws://localhost:3002/_next/hmr?id=Dd1ocLC42LiiKEENvEGYF' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_client_0_90u2t._.js:16348
+[  591043ms] [ERROR] WebSocket connection to 'ws://localhost:3002/_next/hmr?id=Dd1ocLC42LiiKEENvEGYF' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_client_0_90u2t._.js:16348
+[  596065ms] [ERROR] WebSocket connection to 'ws://localhost:3002/_next/hmr?id=Dd1ocLC42LiiKEENvEGYF' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_client_0_90u2t._.js:16348
+[  601094ms] [ERROR] WebSocket connection to 'ws://localhost:3002/_next/hmr?id=Dd1ocLC42LiiKEENvEGYF' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_client_0_90u2t._.js:16348
+[  606166ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  609197ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  609215ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  609224ms] [ERROR] %c%s%c (node:77927) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created) background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
