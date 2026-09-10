@@ -1,0 +1,66 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - complementary [ref=f6e3]:
+      - generic [ref=f6e4]: sales-flow
+      - navigation [ref=f6e7]:
+        - link "仪表盘" [ref=f6e8] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=f6e14] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=f6e19] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=f6e25] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=f6e29] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=f6e33] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=f6e37] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=f6e40] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=f6e46]:
+      - banner [ref=f6e47]:
+        - generic [ref=f6e48]: 管理员
+        - generic [ref=f6e49]: 管理员
+        - button "登出" [ref=f6e51]
+      - main [ref=f6e52]:
+        - generic [ref=f6e53]:
+          - heading "新建配件" [level=1] [ref=f6e54]
+          - generic [ref=f6e55]:
+            - generic [ref=f6e56]:
+              - generic [ref=f6e57]: 配件号 *
+              - textbox "配件号 *" [ref=f6e58]:
+                - /placeholder: 如 BR-1234
+            - generic [ref=f6e59]:
+              - generic [ref=f6e60]: 名称 *
+              - textbox "名称 *" [ref=f6e61]:
+                - /placeholder: 如 刹车片 前轮
+            - generic [ref=f6e62]:
+              - generic [ref=f6e63]: 品牌
+              - textbox "品牌" [ref=f6e64]:
+                - /placeholder: 如 明治 / Bosch
+            - generic [ref=f6e65]:
+              - generic [ref=f6e66]: 规格 / 适配车型备注
+              - textbox "规格 / 适配车型备注" [ref=f6e67]
+            - generic [ref=f6e68]:
+              - switch "寄卖件" [ref=f6e69]
+              - checkbox [aria-hidden]
+              - generic [ref=f6e70]:
+                - generic [ref=f6e71]: 寄卖件
+                - paragraph [ref=f6e72]: 寄卖件（如明治品牌）不进成本/利润体系：入库走「寄卖入库/退回」，卖出只消库存
+            - generic [ref=f6e73]:
+              - button "创建配件" [ref=f6e74]
+              - button "返回" [ref=f6e75]
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=f6e86]:
+        - generic [ref=f6e90]: 配件已创建
+  - button "Open Next.js Dev Tools" [ref=f6e92] [cursor=pointer]:
+    - generic [ref=f6e95]:
+      - text: Compiling
+      - generic [ref=f6e96]:
+        - generic [ref=f6e97]: .
+        - generic [ref=f6e98]: .
+        - generic [ref=f6e99]: .
+  - alert [ref=f6e85]

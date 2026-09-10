@@ -2,3 +2,42 @@
 [     584ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales:0
 [     674ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
 [     688ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   58599ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   58914ms] [LOG] [Fast Refresh] done in 415ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   62712ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   63178ms] [LOG] [Fast Refresh] done in 569ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   91632ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   91759ms] [LOG] [Fast Refresh] done in 234ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  101561ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  101901ms] [LOG] [Fast Refresh] done in 352ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  122647ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  122732ms] [LOG] [Fast Refresh] done in 19ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  122733ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  122756ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  122802ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  122806ms] [LOG] [Fast Refresh] done in 19ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  122889ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  122901ms] [LOG] [Fast Refresh] done in 19ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  122951ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales:0
+[  122997ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  123007ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  123546ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  123554ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  123556ms] [LOG] [Fast Refresh] done in 112ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  123592ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  123684ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  123698ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales:0
+[  123758ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  123767ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  135946ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  136393ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  136398ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  136554ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales?_rsc=7TmJZH1YHwSue7fr:0
+[  136555ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  136618ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  136694ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/sales:0
+[  136751ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  136763ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  142592ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  142677ms] [LOG] [Fast Refresh] done in 146ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  152961ms] [LOG] [Fast Refresh] done in 146ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776

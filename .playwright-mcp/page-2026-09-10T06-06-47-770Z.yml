@@ -1,0 +1,33 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e26]:
+    - complementary [ref=f5e27]:
+      - generic [ref=f5e28]: sales-flow
+      - navigation [ref=f5e31]:
+        - link "仪表盘" [ref=f5e32] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=f5e38] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=f5e43] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=f5e49] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=f5e53] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=f5e57] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=f5e61] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=f5e64] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=f5e70]:
+      - banner [ref=f5e71]:
+        - generic [ref=f5e72]: 管理员
+        - generic [ref=f5e73]: 管理员
+        - button "登出" [ref=f5e75]
+      - main [ref=f5e76]:
+        - generic [ref=f5e77]:
+          - heading "仪表盘" [level=1] [ref=f5e78]
+          - paragraph [ref=f5e79]: 你好，管理员。概览卡片将在后续步骤补齐。
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f5e21] [cursor=pointer]
+  - alert [ref=f5e25]
