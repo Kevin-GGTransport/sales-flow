@@ -1,0 +1,286 @@
+import { Prisma } from "@/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+import { Decimal } from "@/lib/money";
+
+export type InventoryReportRow = {
+  partId: string;
+  partNumber: string;
+  name: string;
+  isConsignment: boolean;
+  qty: number;
+  avgCost: string;
+  value: string;
+};
+
+/** 库存报表：自营件（数量/均价/价值）+ 寄卖件（数量）分开返回 */
+export async function inventoryReport(): Promise<{
+  owned: InventoryReportRow[];
+  consignment: InventoryReportRow[];
+  ownedTotalValue: string;
+}> {
+  const parts = await prisma.part.findMany({
+    where: { isActive: true },
+    include: { inventory: true },
+    orderBy: { partNumber: "asc" },
+  });
+
+  const toRow = (p: (typeof parts)[number]): InventoryReportRow => {
+    const qty = p.inventory?.qty ?? 0;
+    const avg = p.inventory?.avgCost ?? new Decimal(0);
+    const value = avg.mul(qty).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    return {
+      partId: p.id,
+      partNumber: p.partNumber,
+      name: p.name,
+      isConsignment: p.isConsignment,
+      qty,
+      avgCost: avg.toDecimalPlaces(4).toString(),
+      value: value.toString(),
+    };
+  };
+
+  const owned = parts.filter((p) => !p.isConsignment).map(toRow);
+  const consignment = parts.filter((p) => p.isConsignment).map(toRow);
+  const ownedTotalValue = owned
+    .reduce((s, r) => s.add(new Decimal(r.value)), new Decimal(0))
+    .toString();
+
+  return { owned, consignment, ownedTotalValue };
+}
+
+export type MonthlyRow = {
+  month: string; // yyyy-MM
+  purchaseAmount: string;
+  saleAmount: string;
+  consignmentSale: string;
+  netAmount: string; // 卖出 − 买入（单据口径）
+};
+
+type RawMonthly = { month: Date; total: Prisma.Decimal; consignment: Prisma.Decimal | null };
+
+/** 月度单据口径：按 orderDate 汇总 ACTIVE 买入/卖出额（卖出拆寄卖） */
+export async function monthlyByOrderDate(year: number): Promise<MonthlyRow[]> {
+  const start = new Date(Date.UTC(year, 0, 1));
+  const end = new Date(Date.UTC(year + 1, 0, 1));
+
+  const purchases: RawMonthly[] = await prisma.$queryRaw(
+    Prisma.sql`
+      SELECT date_trunc('month', o."orderDate") AS month, SUM(o."totalAmount") AS total, NULL AS consignment
+      FROM "PurchaseOrder" o
+      WHERE o."status" = 'ACTIVE' AND o."orderDate" >= ${start} AND o."orderDate" < ${end}
+      GROUP BY 1 ORDER BY 1
+    `,
+  );
+  const sales: RawMonthly[] = await prisma.$queryRaw(
+    Prisma.sql`
+      SELECT date_trunc('month', o."orderDate") AS month,
+             SUM(l."lineTotal") AS total,
+             SUM(CASE WHEN l."isConsignment" THEN l."lineTotal" ELSE 0 END) AS consignment
+      FROM "SaleOrder" o
+      JOIN "SaleOrderLine" l ON l."orderId" = o."id"
+      WHERE o."status" = 'ACTIVE' AND o."orderDate" >= ${start} AND o."orderDate" < ${end}
+      GROUP BY 1 ORDER BY 1
+    `,
+  );
+
+  const map = new Map<string, MonthlyRow>();
+  const key = (d: Date) =>
+    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  const empty = (m: string): MonthlyRow => ({
+    month: m,
+    purchaseAmount: "0",
+    saleAmount: "0",
+    consignmentSale: "0",
+    netAmount: "0",
+  });
+
+  for (const r of purchases) {
+    const row = map.get(key(r.month)) ?? empty(key(r.month));
+    row.purchaseAmount = r.total.toString();
+    map.set(key(r.month), row);
+  }
+  for (const r of sales) {
+    const row = map.get(key(r.month)) ?? empty(key(r.month));
+    row.saleAmount = (r.total ?? new Decimal(0)).toString();
+    row.consignmentSale = (r.consignment ?? new Decimal(0)).toString();
+    map.set(key(r.month), row);
+  }
+  for (const row of map.values()) {
+    row.netAmount = new Decimal(row.saleAmount)
+      .sub(new Decimal(row.purchaseAmount))
+      .toDecimalPlaces(2)
+      .toString();
+  }
+  return [...map.values()].sort((a, b) => a.month.localeCompare(b.month));
+}
+
+export type CashRow = {
+  month: string;
+  received: string; // 实收（卖出单收款）
+  paid: string; // 实付（买入单付款）
+  net: string;
+};
+
+/** 月度现金口径：按 payDate 汇总收付款 */
+export async function monthlyCashByPayDate(year: number): Promise<CashRow[]> {
+  const start = new Date(Date.UTC(year, 0, 1));
+  const end = new Date(Date.UTC(year + 1, 0, 1));
+
+  const rows: { month: Date; received: Prisma.Decimal; paid: Prisma.Decimal }[] =
+    await prisma.$queryRaw(
+      Prisma.sql`
+        SELECT date_trunc('month', p."payDate") AS month,
+               SUM(CASE WHEN p."saleOrderId" IS NOT NULL THEN p."amount" ELSE 0 END) AS received,
+               SUM(CASE WHEN p."purchaseOrderId" IS NOT NULL THEN p."amount" ELSE 0 END) AS paid
+        FROM "Payment" p
+        WHERE p."payDate" >= ${start} AND p."payDate" < ${end}
+        GROUP BY 1 ORDER BY 1
+      `,
+    );
+
+  return rows.map((r) => ({
+    month: `${r.month.getUTCFullYear()}-${String(r.month.getUTCMonth() + 1).padStart(2, "0")}`,
+    received: r.received.toString(),
+    paid: r.paid.toString(),
+    net: r.received.sub(r.paid).toDecimalPlaces(2).toString(),
+  }));
+}
+
+export type ProfitMonthRow = {
+  month: string;
+  revenue: string; // 自营行收入
+  cost: string;
+  profit: string;
+};
+
+export type ProfitPartRow = {
+  partId: string;
+  partNumber: string;
+  name: string;
+  qtySold: number;
+  revenue: string;
+  cost: string;
+  profit: string;
+};
+
+/** 利润统计（仅自营行）：按月 */
+export async function profitByMonth(year: number): Promise<ProfitMonthRow[]> {
+  const start = new Date(Date.UTC(year, 0, 1));
+  const end = new Date(Date.UTC(year + 1, 0, 1));
+
+  const rows: { month: Date; revenue: Prisma.Decimal; cost: Prisma.Decimal }[] =
+    await prisma.$queryRaw(
+      Prisma.sql`
+        SELECT date_trunc('month', o."orderDate") AS month,
+               SUM(l."lineTotal") AS revenue,
+               SUM(l."costTotal") AS cost
+        FROM "SaleOrder" o
+        JOIN "SaleOrderLine" l ON l."orderId" = o."id"
+        WHERE o."status" = 'ACTIVE' AND l."isConsignment" = false
+          AND o."orderDate" >= ${start} AND o."orderDate" < ${end}
+        GROUP BY 1 ORDER BY 1
+      `,
+    );
+
+  return rows.map((r) => ({
+    month: `${r.month.getUTCFullYear()}-${String(r.month.getUTCMonth() + 1).padStart(2, "0")}`,
+    revenue: r.revenue.toString(),
+    cost: r.cost.toString(),
+    profit: r.revenue.sub(r.cost).toDecimalPlaces(2).toString(),
+  }));
+}
+
+/** 利润统计（仅自营行）：按配件（全年） */
+export async function profitByPart(year: number): Promise<ProfitPartRow[]> {
+  const start = new Date(Date.UTC(year, 0, 1));
+  const end = new Date(Date.UTC(year + 1, 0, 1));
+
+  const rows: {
+    partId: string;
+    partNumber: string;
+    name: string;
+    qty: bigint;
+    revenue: Prisma.Decimal;
+    cost: Prisma.Decimal;
+  }[] = await prisma.$queryRaw(
+    Prisma.sql`
+      SELECT p."id" AS "partId", p."partNumber", p."name",
+             SUM(l."qty") AS qty,
+             SUM(l."lineTotal") AS revenue,
+             SUM(l."costTotal") AS cost
+      FROM "SaleOrder" o
+      JOIN "SaleOrderLine" l ON l."orderId" = o."id"
+      JOIN "Part" p ON p."id" = l."partId"
+      WHERE o."status" = 'ACTIVE' AND l."isConsignment" = false
+        AND o."orderDate" >= ${start} AND o."orderDate" < ${end}
+      GROUP BY p."id", p."partNumber", p."name"
+      ORDER BY revenue DESC
+    `,
+  );
+
+  return rows.map((r) => ({
+    partId: r.partId,
+    partNumber: r.partNumber,
+    name: r.name,
+    qtySold: Number(r.qty),
+    revenue: r.revenue.toString(),
+    cost: r.cost.toString(),
+    profit: r.revenue.sub(r.cost).toDecimalPlaces(2).toString(),
+  }));
+}
+
+/** 应收/应付余额汇总（按客户/供应商） */
+export async function outstandingSummary(): Promise<{
+  receivables: { customerName: string; orderNo: string; due: string; orderId: string }[];
+  payables: { supplierName: string; orderNo: string; due: string; orderId: string }[];
+  totalReceivable: string;
+  totalPayable: string;
+}> {
+  const [sales, purchases] = await Promise.all([
+    prisma.saleOrder.findMany({
+      where: { status: "ACTIVE" },
+      include: { payments: { select: { amount: true } } },
+      orderBy: [{ orderDate: "asc" }, { createdAt: "asc" }],
+    }),
+    prisma.purchaseOrder.findMany({
+      where: { status: "ACTIVE" },
+      include: { payments: { select: { amount: true } } },
+      orderBy: [{ orderDate: "asc" }, { createdAt: "asc" }],
+    }),
+  ]);
+
+  const due = (total: Prisma.Decimal, ps: { amount: Prisma.Decimal }[]) =>
+    total.sub(ps.reduce((s, p) => s.add(p.amount), new Decimal(0)));
+
+  const receivables = sales
+    .map((o) => ({
+      customerName: o.customerName,
+      orderNo: o.orderNo,
+      orderId: o.id,
+      due: due(o.totalAmount, o.payments),
+    }))
+    .filter((r) => r.due.greaterThan(0.004))
+    .map((r) => ({ ...r, due: r.due.toDecimalPlaces(2).toString() }));
+  const payables = purchases
+    .map((o) => ({
+      supplierName: o.supplierName,
+      orderNo: o.orderNo,
+      orderId: o.id,
+      due: due(o.totalAmount, o.payments),
+    }))
+    .filter((r) => r.due.greaterThan(0.004))
+    .map((r) => ({ ...r, due: r.due.toDecimalPlaces(2).toString() }));
+
+  const sum = (arr: { due: string }[]) =>
+    arr
+      .reduce((s, r) => s.add(new Decimal(r.due)), new Decimal(0))
+      .toDecimalPlaces(2)
+      .toString();
+
+  return {
+    receivables,
+    payables,
+    totalReceivable: sum(receivables),
+    totalPayable: sum(payables),
+  };
+}
