@@ -96,6 +96,30 @@ export async function createPurchaseOrder(
         },
       });
 
+      // 当场付款快捷项：建单同时记一笔付款（金额空 = 全额，且 ≤ 单据总额）
+      const payNowMethod = String(formData.get("payNowMethod") ?? "NONE");
+      const payNowAmountRaw = String(formData.get("payNowAmount") ?? "").trim();
+      if (payNowMethod !== "NONE") {
+        if (payNowAmountRaw && !/^\d+(\.\d{1,2})?$/.test(payNowAmountRaw)) {
+          return { ok: false, error: "当场付款金额格式不正确" };
+        }
+        const payAmount = payNowAmountRaw ? new Decimal(payNowAmountRaw) : total;
+        if (payAmount.gt(total)) {
+          return { ok: false, error: "当场付款金额不能超过单据总额" };
+        }
+        if (payAmount.gt(0)) {
+          await tx.payment.create({
+            data: {
+              method: payNowMethod as "CASH" | "CHECK" | "ONLINE",
+              amount: payAmount,
+              payDate: orderDate,
+              purchaseOrderId: order.id,
+              createdById: user.id,
+            },
+          });
+        }
+      }
+
       for (const [partId, state] of nextStates) {
         await tx.inventory.upsert({
           where: { partId },

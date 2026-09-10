@@ -1,0 +1,145 @@
+- generic:
+  - generic [aria-hidden]:
+    - complementary:
+      - generic: sales-flow
+      - navigation:
+        - link:
+          - /url: /
+          - text: 仪表盘
+        - link:
+          - /url: /parts
+          - text: 配件
+        - link:
+          - /url: /purchases
+          - text: 买入单
+        - link:
+          - /url: /sales
+          - text: 卖出单
+        - link:
+          - /url: /payments
+          - text: 销账
+        - link:
+          - /url: /invoices
+          - text: 开票
+        - link:
+          - /url: /reports
+          - text: 统计
+        - link:
+          - /url: /users
+          - text: 用户管理
+    - generic:
+      - banner:
+        - generic: 管理员
+        - generic: 管理员
+        - generic:
+          - button: 登出
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - link:
+                - /url: /sales
+                - text: ← 卖出单
+              - heading [level=1]: SO-20260910-001
+              - generic: 有效
+            - generic:
+              - link:
+                - /url: /sales/new?copyFrom=cmtv57gjq000cel92qv0nwdma
+                - text: 复制重开
+              - button: 作废
+          - generic:
+            - generic: 单据信息
+            - generic:
+              - paragraph: 日期：2026-09-10
+              - paragraph: 客户：John's Repair Shop
+              - paragraph: 联系方式：555-1234, 123 Main St, LA
+              - paragraph: 总金额：$150.00
+              - paragraph: 自营毛利：$100.00
+              - paragraph: 录单人：管理员
+          - generic:
+            - generic:
+              - table:
+                - rowgroup:
+                  - row:
+                    - columnheader: 配件号
+                    - columnheader: 名称
+                    - columnheader: 数量
+                    - columnheader: 售价
+                    - columnheader: 小计
+                    - columnheader: 成本/件
+                    - columnheader: 成本合计
+                    - columnheader: 毛利
+                - rowgroup:
+                  - row:
+                    - cell:
+                      - link:
+                        - /url: /parts/cmtv4l08o0000el92zyeznoik
+                        - text: BR-1001
+                    - cell: 刹车片 前轮
+                    - cell: "5"
+                    - cell: $30.00
+                    - cell: $150.00
+                    - cell: $10.00
+                    - cell: $50.00
+                    - cell: $100.00
+                  - row:
+                    - cell: 合计
+                    - cell: $150.00
+                    - cell
+                    - cell: $100.00
+          - generic:
+            - generic:
+              - generic:
+                - text: 收款记录
+                - generic: 未结 $50.00
+              - button [expanded]: 记收款
+            - generic:
+              - table:
+                - rowgroup:
+                  - row:
+                    - columnheader: 日期
+                    - columnheader: 方式
+                    - columnheader: 金额
+                    - columnheader: 备注
+                    - columnheader: 经办
+                    - columnheader
+                - rowgroup:
+                  - row:
+                    - cell: 2026-09-10
+                    - cell: 现金
+                    - cell: $100
+                    - cell: "-"
+                    - cell: 管理员
+                    - cell:
+                      - button
+          - paragraph: 成本为卖出当时的加权平均成本快照，不随后续进货变化；开票与收款相互独立。
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f6e131] [cursor=pointer]
+  - alert
+  - dialog [aria-hidden]:
+    - generic:
+      - heading [level=2]: 记一笔收款
+      - paragraph: 金额不能超过未结余额。
+    - generic:
+      - generic:
+        - generic: 方式
+        - combobox [expanded]:
+          - generic: 现金
+        - combobox [aria-hidden]
+      - generic:
+        - generic: 金额($) *
+        - textbox: "50.00"
+      - generic:
+        - generic: 日期
+        - textbox: 2026-09-10
+      - generic:
+        - generic: 备注
+        - textbox:
+          - /placeholder: 如支票号
+      - button: 保存
+    - button:
+      - generic: Close
+  - listbox [ref=f6e202]:
+    - option "现金" [active] [selected] [ref=f6e203]
+    - option "支票" [ref=f6e205]
+    - option "线上" [ref=f6e207]

@@ -1,0 +1,94 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - complementary [ref=f8e3]:
+      - generic [ref=f8e4]: sales-flow
+      - navigation [ref=f8e7]:
+        - link "仪表盘" [ref=f8e8] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=f8e14] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=f8e19] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=f8e25] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=f8e29] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=f8e33] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=f8e37] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=f8e40] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=f8e46]:
+      - banner [ref=f8e47]:
+        - generic [ref=f8e48]: 管理员
+        - generic [ref=f8e49]: 管理员
+        - button "登出" [ref=f8e51]
+      - main [ref=f8e52]:
+        - generic [ref=f8e143]:
+          - generic [ref=f8e144]:
+            - generic [ref=f8e145]:
+              - link "← 买入单" [ref=f8e146] [cursor=pointer]:
+                - /url: /purchases
+              - heading "PO-20260910-004" [level=1] [ref=f8e147]
+              - generic [ref=f8e148]: 有效
+            - generic [ref=f8e149]:
+              - link "复制重开" [ref=f8e150] [cursor=pointer]:
+                - /url: /purchases/new?copyFrom=cmtvemdee0008vt922kfa4q1k
+              - button "作废" [ref=f8e151]
+          - generic [ref=f8e152]:
+            - generic [ref=f8e153]: 单据信息
+            - generic [ref=f8e155]:
+              - paragraph [ref=f8e156]: 日期：2026-09-10
+              - paragraph [ref=f8e157]: 供应商：现金测试供应商
+              - paragraph [ref=f8e158]: 总金额：$5.00
+              - paragraph [ref=f8e159]: 录单人：管理员
+          - table [ref=f8e162]:
+            - rowgroup [ref=f8e163]:
+              - row [ref=f8e164]:
+                - columnheader "配件号" [ref=f8e165]
+                - columnheader "名称" [ref=f8e166]
+                - columnheader "数量" [ref=f8e167]
+                - columnheader "单价" [ref=f8e168]
+                - columnheader "小计" [ref=f8e169]
+            - rowgroup [ref=f8e170]:
+              - row [ref=f8e171]:
+                - cell [ref=f8e172]:
+                  - link "BR-1001" [ref=f8e173] [cursor=pointer]:
+                    - /url: /parts/cmtv4l08o0000el92zyeznoik
+                - cell "刹车片 前轮" [ref=f8e174]
+                - cell "1" [ref=f8e175]
+                - cell "$5.00" [ref=f8e176]
+                - cell "$5.00" [ref=f8e177]
+              - row [ref=f8e178]:
+                - cell "合计" [ref=f8e179]
+                - cell "$5.00" [ref=f8e180]
+          - generic [ref=f8e181]:
+            - generic [ref=f8e183]:
+              - text: 付款记录
+              - generic [ref=f8e190]: 已结清
+            - table [ref=f8e192]:
+              - rowgroup [ref=f8e193]:
+                - row [ref=f8e194]:
+                  - columnheader "日期" [ref=f8e195]
+                  - columnheader "方式" [ref=f8e196]
+                  - columnheader "金额" [ref=f8e197]
+                  - columnheader "备注" [ref=f8e198]
+                  - columnheader "经办" [ref=f8e199]
+                  - columnheader [ref=f8e200]
+              - rowgroup [ref=f8e201]:
+                - row [ref=f8e202]:
+                  - cell "2026-09-10" [ref=f8e203]
+                  - cell "现金" [ref=f8e204]
+                  - cell "$5" [ref=f8e205]
+                  - cell "-" [ref=f8e206]
+                  - cell "管理员" [ref=f8e207]
+                  - cell [ref=f8e208]:
+                    - button "删除该笔记录" [ref=f8e209]
+          - paragraph [ref=f8e210]:
+            - text: 单据保存后不可修改；录错了请「作废」后「复制重开」（
+            - generic [ref=f8e211]: 寄卖
+            - text: 件不能走买入单）；有付款记录的单须先删付款才能作废。
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f8e101] [cursor=pointer]
+  - alert [ref=f8e105]: PO-20260910-004

@@ -1,0 +1,98 @@
+- generic:
+  - generic [aria-hidden]:
+    - complementary:
+      - generic: sales-flow
+      - navigation:
+        - link:
+          - /url: /
+          - text: 仪表盘
+        - link:
+          - /url: /parts
+          - text: 配件
+        - link:
+          - /url: /purchases
+          - text: 买入单
+        - link:
+          - /url: /sales
+          - text: 卖出单
+        - link:
+          - /url: /payments
+          - text: 销账
+        - link:
+          - /url: /invoices
+          - text: 开票
+        - link:
+          - /url: /reports
+          - text: 统计
+        - link:
+          - /url: /users
+          - text: 用户管理
+    - generic:
+      - banner:
+        - generic: 管理员
+        - generic: 管理员
+        - generic:
+          - button: 登出
+      - main:
+        - generic:
+          - heading [level=1]: 新建买入单
+          - generic:
+            - generic:
+              - generic:
+                - generic: 日期 *
+                - textbox: 2026-09-10
+              - generic:
+                - generic: 供应商 *
+                - textbox:
+                  - /placeholder: 从谁买
+                  - text: 现金测试供应商
+            - generic:
+              - generic:
+                - generic:
+                  - generic: 配件
+                  - generic: 数量
+                  - generic: 单价($)
+                  - generic: 小计
+                - generic:
+                  - generic:
+                    - combobox:
+                      - generic:
+                        - generic: BR-1001
+                        - generic: 刹车片 前轮
+                  - textbox:
+                    - /placeholder: "0"
+                    - text: "1"
+                  - textbox:
+                    - /placeholder: "0.00"
+                    - text: "5"
+                  - generic: $5.00
+                  - button
+                - generic:
+                  - generic:
+                    - button: 加一行
+                    - button: 快速新建配件
+                  - paragraph:
+                    - text: 合计：
+                    - generic: $5.00
+            - generic:
+              - generic: 备注
+              - textbox
+            - generic:
+              - generic: 当场付款（可选）
+              - generic:
+                - combobox [expanded]:
+                  - generic: 暂不付款
+                - combobox [aria-hidden]
+                - textbox:
+                  - /placeholder: 金额，默认全额
+              - paragraph: 买的时候当场给钱的选这里，建单同时记一笔付款；留空金额 = 按全额记。
+            - generic:
+              - button: 保存买入单
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f8e101] [cursor=pointer]
+  - alert
+  - listbox [ref=f8e126]:
+    - option "暂不付款" [active] [selected] [ref=f8e127]
+    - option "现金付清" [ref=f8e129]
+    - option "支票付清" [ref=f8e131]
+    - option "线上付清" [ref=f8e133]

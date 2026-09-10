@@ -74,6 +74,23 @@ export const saleOrderSchema = z.object({
 
 export type SaleOrderInput = z.infer<typeof saleOrderSchema>;
 
+export const paymentSchema = z.object({
+  method: z.enum(["CASH", "CHECK", "ONLINE"]),
+  amount: moneyString.refine((v) => Number(v) > 0, "金额必须大于 0"),
+  payDate: dateString,
+  note: z.string().trim().max(200, "备注过长"),
+  saleOrderId: z.string().optional(),
+  purchaseOrderId: z.string().optional(),
+});
+
+export type PaymentInput = z.infer<typeof paymentSchema>;
+
+export const PAYMENT_METHOD_LABEL: Record<"CASH" | "CHECK" | "ONLINE", string> = {
+  CASH: "现金",
+  CHECK: "支票",
+  ONLINE: "线上",
+};
+
 /** 从 FormData 解析单据（表单把明细行 JSON 放在 lines 字段） */
 export function parseLinesFromForm(formData: FormData): unknown {
   const raw = String(formData.get("lines") ?? "[]");

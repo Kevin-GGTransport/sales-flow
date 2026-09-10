@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { VoidOrderDialog } from "@/components/orders/VoidOrderDialog";
+import { PaymentsCard } from "@/components/payments/PaymentsCard";
 
 export default async function SaleDetailPage({
   params,
@@ -30,6 +31,10 @@ export default async function SaleDetailPage({
         lines: { include: { part: true } },
         createdBy: { select: { name: true } },
         voidedBy: { select: { name: true } },
+        payments: {
+          include: { createdBy: { select: { name: true } } },
+          orderBy: { payDate: "asc" },
+        },
       },
     }),
     auth(),
@@ -170,8 +175,25 @@ export default async function SaleDetailPage({
       </div>
 
       {order.status === "ACTIVE" && (
+        <PaymentsCard
+          kind="sale"
+          orderId={order.id}
+          totalAmount={order.totalAmount.toString()}
+          payments={order.payments.map((p) => ({
+            id: p.id,
+            method: p.method,
+            amount: p.amount.toString(),
+            payDate: formatDateString(p.payDate),
+            note: p.note,
+            by: p.createdBy.name,
+          }))}
+          isAdmin={isAdmin}
+        />
+      )}
+
+      {order.status === "ACTIVE" && (
         <p className="text-xs text-muted-foreground">
-          成本为卖出当时的加权平均成本快照，不随后续进货变化。
+          成本为卖出当时的加权平均成本快照，不随后续进货变化；开票与收款相互独立。
         </p>
       )}
     </div>

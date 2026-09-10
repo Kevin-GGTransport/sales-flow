@@ -1,0 +1,109 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - complementary [ref=f6e3]:
+      - generic [ref=f6e4]: sales-flow
+      - navigation [ref=f6e7]:
+        - link "仪表盘" [ref=f6e8] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=f6e14] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=f6e19] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=f6e25] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=f6e29] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=f6e33] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=f6e37] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=f6e40] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=f6e46]:
+      - banner [ref=f6e47]:
+        - generic [ref=f6e48]: 管理员
+        - generic [ref=f6e49]: 管理员
+        - button "登出" [ref=f6e51]
+      - main [ref=f6e52]:
+        - generic [ref=f6e53]:
+          - generic [ref=f6e54]:
+            - generic [ref=f6e55]:
+              - link "← 卖出单" [ref=f6e56] [cursor=pointer]:
+                - /url: /sales
+              - heading "SO-20260910-001" [level=1] [ref=f6e57]
+              - generic [ref=f6e58]: 有效
+            - generic [ref=f6e59]:
+              - link "复制重开" [ref=f6e60] [cursor=pointer]:
+                - /url: /sales/new?copyFrom=cmtv57gjq000cel92qv0nwdma
+              - button "作废" [ref=f6e61]
+          - generic [ref=f6e62]:
+            - generic [ref=f6e63]: 单据信息
+            - generic [ref=f6e65]:
+              - paragraph [ref=f6e66]: 日期：2026-09-10
+              - paragraph [ref=f6e67]: 客户：John's Repair Shop
+              - paragraph [ref=f6e68]: 联系方式：555-1234, 123 Main St, LA
+              - paragraph [ref=f6e69]: 总金额：$150.00
+              - paragraph [ref=f6e70]: 自营毛利：$100.00
+              - paragraph [ref=f6e71]: 录单人：管理员
+          - table [ref=f6e74]:
+            - rowgroup [ref=f6e75]:
+              - row [ref=f6e76]:
+                - columnheader "配件号" [ref=f6e77]
+                - columnheader "名称" [ref=f6e78]
+                - columnheader "数量" [ref=f6e79]
+                - columnheader "售价" [ref=f6e80]
+                - columnheader "小计" [ref=f6e81]
+                - columnheader "成本/件" [ref=f6e82]
+                - columnheader "成本合计" [ref=f6e83]
+                - columnheader "毛利" [ref=f6e84]
+            - rowgroup [ref=f6e85]:
+              - row [ref=f6e86]:
+                - cell [ref=f6e87]:
+                  - link "BR-1001" [ref=f6e88] [cursor=pointer]:
+                    - /url: /parts/cmtv4l08o0000el92zyeznoik
+                - cell "刹车片 前轮" [ref=f6e89]
+                - cell "5" [ref=f6e90]
+                - cell "$30.00" [ref=f6e91]
+                - cell "$150.00" [ref=f6e92]
+                - cell "$10.00" [ref=f6e93]
+                - cell "$50.00" [ref=f6e94]
+                - cell "$100.00" [ref=f6e95]
+              - row [ref=f6e96]:
+                - cell "合计" [ref=f6e97]
+                - cell "$150.00" [ref=f6e98]
+                - cell [ref=f6e99]
+                - cell "$100.00" [ref=f6e100]
+          - generic [ref=f6e101]:
+            - generic [ref=f6e103]:
+              - text: 收款记录
+              - generic [ref=f6e110]: 已结清
+            - table [ref=f6e113]:
+              - rowgroup [ref=f6e114]:
+                - row [ref=f6e115]:
+                  - columnheader "日期" [ref=f6e116]
+                  - columnheader "方式" [ref=f6e117]
+                  - columnheader "金额" [ref=f6e118]
+                  - columnheader "备注" [ref=f6e119]
+                  - columnheader "经办" [ref=f6e120]
+                  - columnheader [ref=f6e121]
+              - rowgroup [ref=f6e122]:
+                - row [ref=f6e172]:
+                  - cell "2026-09-10" [ref=f6e173]
+                  - cell "现金" [ref=f6e174]
+                  - cell "$100" [ref=f6e175]
+                  - cell "-" [ref=f6e176]
+                  - cell "管理员" [ref=f6e177]
+                  - cell [ref=f6e178]:
+                    - button "删除该笔记录" [ref=f6e179]
+                - row [ref=f6e223]:
+                  - cell "2026-09-10" [ref=f6e224]
+                  - cell "支票" [ref=f6e225]
+                  - cell "$50" [ref=f6e226]
+                  - cell "-" [ref=f6e227]
+                  - cell "管理员" [ref=f6e228]
+                  - cell [ref=f6e229]:
+                    - button "删除该笔记录" [ref=f6e230]
+          - paragraph [ref=f6e125]: 成本为卖出当时的加权平均成本快照，不随后续进货变化；开票与收款相互独立。
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f6e131] [cursor=pointer]
+  - alert [ref=f6e135]

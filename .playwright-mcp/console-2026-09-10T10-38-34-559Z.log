@@ -1,2 +1,248 @@
 [     817ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
 [     834ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   51472ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   51766ms] [LOG] [Fast Refresh] done in 381ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   51891ms] [LOG] [Fast Refresh] done in 381ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   99407ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   99557ms] [LOG] [Fast Refresh] done in 185ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  108810ms] [LOG] [Fast Refresh] done in 185ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  119925ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  119991ms] [LOG] [Fast Refresh] done in 15ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  129469ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  130355ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  130453ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  131103ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  131182ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  131971ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  134505ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  134698ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  135018ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  161861ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  161993ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  162198ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  162619ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  162676ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  162881ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  162926ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  163041ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3002/parts?_rsc=BOy8QyyGNx0SZPFn:0
+[  163068ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3002/parts?_rsc=BOy8QyyGNx0SZPFn:0
+[  163117ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3002/parts:0
+[  163207ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_react-dom_0kla17-._.js:15093
+[  163244ms] Error: ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error
+
+
+    at <unknown> (Error: ./src/actions/payments.ts:12:17)
+    at Object.getCompilationErrors (file:///Users/zhangfulai/FLY_Project/我的项目/GNG_Project/project/sales-manage/node_modules/next/dist/server/dev/hot-reloader-turbopack.js:1417:59)
+    at DevBundlerService.getCompilationError (file:///Users/zhangfulai/FLY_Project/我的项目/GNG_Project/project/sales-manage/node_modules/next/dist/server/lib/dev-bundler-service.js:59:55)
+    at DevServer.getCompilationError (file:///Users/zhangfulai/FLY_Project/我的项目/GNG_Project/project/sales-manage/node_modules/next/dist/server/dev/next-dev-server.js:754:42)
+    at DevServer.findPageComponents (file:///Users/zhangfulai/FLY_Project/我的项目/GNG_Project/project/sales-manage/node_modules/next/dist/server/dev/next-dev-server.js:724:43)
+    at async DevServer.renderErrorToResponseImpl (file:///Users/zhangfulai/FLY_Project/我的项目/GNG_Project/project/sales-manage/node_modules/next/dist/server/base-server.js:1828:26)
+[  163241ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  163243ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:1817
+[  163243ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:1817
+[  163312ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:1817
+[  174911ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  175050ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:1817
+[  184119ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:1817
+[  184123ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  195541ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  195659ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:1817
+[  196219ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:1817
+[  196314ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  206422ms] [ERROR] ./src/actions/payments.ts:12:17
+Error: Server Actions must be async functions.
+  10 |
+  11 | /** 计算未结余额 = totalAmount − Σ payments */
+> 12 | export function outstandingOf(
+     |                 ^^^^^^^^^^^^^
+  13 |   order: { totalAmount: Prisma.Decimal },
+  14 |   payments: { amount: Prisma.Decimal }[],
+  15 | ): Decimal {
+
+Ecmascript file had an error @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:1817
+[  220727ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  220810ms] [LOG] [Fast Refresh] done in 166ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  220922ms] [LOG] [Fast Refresh] done in 166ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  221261ms] [LOG] [Fast Refresh] done in 166ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1gdrd03._.js:756
+[  223293ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  223312ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
