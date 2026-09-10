@@ -1,0 +1,98 @@
+- generic:
+  - generic [aria-hidden]:
+    - complementary:
+      - generic: sales-flow
+      - navigation:
+        - link:
+          - /url: /
+          - text: 仪表盘
+        - link:
+          - /url: /parts
+          - text: 配件
+        - link:
+          - /url: /purchases
+          - text: 买入单
+        - link:
+          - /url: /sales
+          - text: 卖出单
+        - link:
+          - /url: /payments
+          - text: 销账
+        - link:
+          - /url: /invoices
+          - text: 开票
+        - link:
+          - /url: /reports
+          - text: 统计
+        - link:
+          - /url: /users
+          - text: 用户管理
+    - generic:
+      - banner:
+        - generic: 管理员
+        - generic: 管理员
+        - generic:
+          - button: 登出
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - link:
+                - /url: /purchases
+                - text: ← 买入单
+              - heading [level=1]: PO-20260910-002
+              - generic: 有效
+            - generic:
+              - link:
+                - /url: /purchases/new?copyFrom=cmtv5265f0008el92uatjtls3
+                - text: 复制重开
+              - button [expanded]: 作废
+          - generic:
+            - generic: 单据信息
+            - generic:
+              - paragraph: 日期：2026-09-10
+              - paragraph: 供应商：AutoParts 供应商A
+              - paragraph: 总金额：$200.00
+              - paragraph: 录单人：管理员
+          - generic:
+            - generic:
+              - table:
+                - rowgroup:
+                  - row:
+                    - columnheader: 配件号
+                    - columnheader: 名称
+                    - columnheader: 数量
+                    - columnheader: 单价
+                    - columnheader: 小计
+                - rowgroup:
+                  - row:
+                    - cell:
+                      - link:
+                        - /url: /parts/cmtv4l08o0000el92zyeznoik
+                        - text: BR-1001
+                    - cell: 刹车片 前轮
+                    - cell: "10"
+                    - cell: $20.00
+                    - cell: $200.00
+                  - row:
+                    - cell: 合计
+                    - cell: $200.00
+          - paragraph:
+            - text: 单据保存后不可修改；录错了请「作废」后「复制重开」（
+            - generic: 寄卖
+            - text: 件不能走买入单）。
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f15e98] [cursor=pointer]
+  - alert
+  - dialog [ref=f15e104]:
+    - generic [ref=f15e105]:
+      - heading "作废单据" [level=2] [ref=f15e106]
+      - paragraph [ref=f15e107]: 作废后留痕不可恢复，库存将按剩余有效单据重算。录错了？保存后用「复制重开」快速重录一张。
+    - generic [ref=f15e108]:
+      - generic [ref=f15e109]: 作废原因 *
+      - textbox "作废原因 *" [active] [ref=f15e110]:
+        - /placeholder: 如：数量录错
+    - generic [ref=f15e111]:
+      - button "取消" [ref=f15e112]
+      - button "确认作废" [ref=f15e113]
+    - button "Close" [ref=f15e114]

@@ -14,3 +14,152 @@
 [  102686ms] [LOG] [HMR] connected @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
 [  152855ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
 [  152909ms] [LOG] [Fast Refresh] done in 155ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  246785ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  247034ms] [LOG] [Fast Refresh] done in 327ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  247197ms] [LOG] [Fast Refresh] done in 327ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  295296ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  295432ms] [LOG] [Fast Refresh] done in 143ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  301719ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  301742ms] [LOG] [Fast Refresh] done in 2ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  316154ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  316184ms] [LOG] [Fast Refresh] done in 29ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  328031ms] [LOG] [Fast Refresh] done in 29ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  336977ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  337067ms] [LOG] [Fast Refresh] done in 174ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  379910ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  379939ms] [LOG] [Fast Refresh] done in 130ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  389230ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  389417ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  389945ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390036ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390155ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390241ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390298ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390350ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390395ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390439ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390536ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390590ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390698ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  390735ms] [LOG] [Fast Refresh] done in 16ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  398079ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  398527ms] [LOG] [Fast Refresh] done in 18ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  398730ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  398802ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  398936ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  398990ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  399037ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  399378ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  399413ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  399456ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  399526ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  399574ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  399612ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  399647ms] [LOG] [Fast Refresh] done in 552ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  414837ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  414914ms] [LOG] [Fast Refresh] done in 178ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  415070ms] [LOG] [Fast Refresh] done in 274ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  415276ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  415471ms] [LOG] [Fast Refresh] done in 296ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  560054ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  560111ms] [ERROR] ./src/lib/validation.ts:88:14
+Error: the name `dateString` is defined multiple times
+  86 |
+  87 | /** 单据日期：yyyy-mm-dd */
+> 88 | export const dateString = z
+     |              ^^^^^^^^^^
+  89 |   .string()
+  90 |   .trim()
+  91 |   .regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式 yyyy-mm-dd");
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/lib/validation.ts
+    ./src/actions/parts.ts @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  560113ms] [ERROR] ./src/lib/validation.ts:97:17
+Error: the name `dateToUtcMidnight` is defined multiple times
+   95 |  * 空值 → 今天。
+   96 |  */
+>  97 | export function dateToUtcMidnight(value: unknown): Date {
+      |                 ^^^^^^^^^^^^^^^^^
+   98 |   const s = String(value ?? "").trim();
+   99 |   const m = /^\d{4}-\d{2}-\d{2}$/.exec(s);
+  100 |   if (!m) {
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/lib/validation.ts
+    ./src/actions/parts.ts @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  560114ms] [ERROR] ./src/lib/validation.ts:108:17
+Error: the name `formatDateString` is defined multiple times
+  106 |
+  107 | /** Date（UTC 零点）→ yyyy-mm-dd（展示/默认值） */
+> 108 | export function formatDateString(d: Date | null | undefined): string {
+      |                 ^^^^^^^^^^^^^^^^
+  109 |   if (!d) return "";
+  110 |   return d.toISOString().slice(0, 10);
+  111 | }
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/lib/validation.ts
+    ./src/actions/parts.ts @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  560517ms] [ERROR] ./src/lib/validation.ts:88:14
+Error: the name `dateString` is defined multiple times
+  86 |
+  87 | /** 单据日期：yyyy-mm-dd */
+> 88 | export const dateString = z
+     |              ^^^^^^^^^^
+  89 |   .string()
+  90 |   .trim()
+  91 |   .regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式 yyyy-mm-dd");
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/lib/validation.ts
+    ./src/actions/parts.ts @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  560517ms] [ERROR] ./src/lib/validation.ts:97:17
+Error: the name `dateToUtcMidnight` is defined multiple times
+   95 |  * 空值 → 今天。
+   96 |  */
+>  97 | export function dateToUtcMidnight(value: unknown): Date {
+      |                 ^^^^^^^^^^^^^^^^^
+   98 |   const s = String(value ?? "").trim();
+   99 |   const m = /^\d{4}-\d{2}-\d{2}$/.exec(s);
+  100 |   if (!m) {
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/lib/validation.ts
+    ./src/actions/parts.ts @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  560517ms] [ERROR] ./src/lib/validation.ts:108:17
+Error: the name `formatDateString` is defined multiple times
+  106 |
+  107 | /** Date（UTC 零点）→ yyyy-mm-dd（展示/默认值） */
+> 108 | export function formatDateString(d: Date | null | undefined): string {
+      |                 ^^^^^^^^^^^^^^^^
+  109 |   if (!d) return "";
+  110 |   return d.toISOString().slice(0, 10);
+  111 | }
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/lib/validation.ts
+    ./src/actions/parts.ts @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:1052
+[  560591ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  571795ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  571878ms] [LOG] [Fast Refresh] done in 65ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  572441ms] [LOG] [Fast Refresh] done in 65ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[  572893ms] [LOG] [Fast Refresh] done in 65ms @ http://localhost:3002/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776

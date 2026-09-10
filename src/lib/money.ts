@@ -1,6 +1,7 @@
 import { Prisma } from "@/generated/prisma/client";
 
 export const Decimal = Prisma.Decimal;
+export type Decimal = Prisma.Decimal;
 
 export type MoneyInput = Prisma.Decimal | string | number;
 

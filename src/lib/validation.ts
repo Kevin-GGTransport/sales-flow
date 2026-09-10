@@ -47,3 +47,40 @@ export function formatDateString(d: Date | null | undefined): string {
   if (!d) return "";
   return d.toISOString().slice(0, 10);
 }
+
+/** 单据明细行（买入/卖出共用） */
+export const orderLineInput = z.object({
+  partId: z.string().min(1, "请选择配件"),
+  qty: z.coerce.number().int("数量必须为整数").positive("数量必须为正"),
+  unitPrice: moneyString,
+});
+
+export const purchaseOrderSchema = z.object({
+  orderDate: dateString,
+  supplierName: z.string().trim().min(1, "供应商必填").max(200, "供应商名过长"),
+  note: z.string().trim().max(500, "备注过长"),
+  lines: z.array(orderLineInput).min(1, "至少需要一行明细"),
+});
+
+export type PurchaseOrderInput = z.infer<typeof purchaseOrderSchema>;
+
+export const saleOrderSchema = z.object({
+  orderDate: dateString,
+  customerName: z.string().trim().min(1, "客户必填").max(200, "客户名过长"),
+  customerContact: z.string().trim().max(300, "联系方式过长"),
+  note: z.string().trim().max(500, "备注过长"),
+  lines: z.array(orderLineInput).min(1, "至少需要一行明细"),
+});
+
+export type SaleOrderInput = z.infer<typeof saleOrderSchema>;
+
+/** 从 FormData 解析单据（表单把明细行 JSON 放在 lines 字段） */
+export function parseLinesFromForm(formData: FormData): unknown {
+  const raw = String(formData.get("lines") ?? "[]");
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [{ partId: "", qty: 0, unitPrice: "x" }]; // 触发 zod 报错
+  }
+}
+

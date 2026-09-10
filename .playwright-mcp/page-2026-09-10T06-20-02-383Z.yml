@@ -1,0 +1,72 @@
+- generic [active] [ref=f12e1]:
+  - generic [ref=f12e2]:
+    - complementary [ref=f12e3]:
+      - generic [ref=f12e4]: sales-flow
+      - navigation [ref=f12e7]:
+        - link "仪表盘" [ref=f12e8] [cursor=pointer]:
+          - /url: /
+        - link "配件" [ref=f12e14] [cursor=pointer]:
+          - /url: /parts
+        - link "买入单" [ref=f12e19] [cursor=pointer]:
+          - /url: /purchases
+        - link "卖出单" [ref=f12e25] [cursor=pointer]:
+          - /url: /sales
+        - link "销账" [ref=f12e29] [cursor=pointer]:
+          - /url: /payments
+        - link "开票" [ref=f12e33] [cursor=pointer]:
+          - /url: /invoices
+        - link "统计" [ref=f12e37] [cursor=pointer]:
+          - /url: /reports
+        - link "用户管理" [ref=f12e40] [cursor=pointer]:
+          - /url: /users
+    - generic [ref=f12e46]:
+      - banner [ref=f12e47]:
+        - generic [ref=f12e48]: 管理员
+        - generic [ref=f12e49]: 管理员
+        - button "登出" [ref=f12e51]
+      - main [ref=f12e52]:
+        - generic [ref=f12e127]:
+          - generic [ref=f12e128]:
+            - generic [ref=f12e129]:
+              - link "← 买入单" [ref=f12e130] [cursor=pointer]:
+                - /url: /purchases
+              - heading "PO-20260910-001" [level=1] [ref=f12e131]
+              - generic [ref=f12e132]: 有效
+            - generic [ref=f12e133]:
+              - link "复制重开" [ref=f12e134] [cursor=pointer]:
+                - /url: /purchases/new?copyFrom=cmtv5102v0005el92031xbros
+              - button "作废" [ref=f12e135]
+          - generic [ref=f12e136]:
+            - generic [ref=f12e137]: 单据信息
+            - generic [ref=f12e139]:
+              - paragraph [ref=f12e140]: 日期：2026-09-10
+              - paragraph [ref=f12e141]: 供应商：AutoParts 供应商A
+              - paragraph [ref=f12e142]: 总金额：$100.00
+              - paragraph [ref=f12e143]: 录单人：管理员
+          - table [ref=f12e146]:
+            - rowgroup [ref=f12e147]:
+              - row [ref=f12e148]:
+                - columnheader "配件号" [ref=f12e149]
+                - columnheader "名称" [ref=f12e150]
+                - columnheader "数量" [ref=f12e151]
+                - columnheader "单价" [ref=f12e152]
+                - columnheader "小计" [ref=f12e153]
+            - rowgroup [ref=f12e154]:
+              - row [ref=f12e155]:
+                - cell [ref=f12e156]:
+                  - link "BR-1001" [ref=f12e157] [cursor=pointer]:
+                    - /url: /parts/cmtv4l08o0000el92zyeznoik
+                - cell "刹车片 前轮" [ref=f12e158]
+                - cell "10" [ref=f12e159]
+                - cell "$10.00" [ref=f12e160]
+                - cell "$100.00" [ref=f12e161]
+              - row [ref=f12e162]:
+                - cell "合计" [ref=f12e163]
+                - cell "$100.00" [ref=f12e164]
+          - paragraph [ref=f12e165]:
+            - text: 单据保存后不可修改；录错了请「作废」后「复制重开」（
+            - generic [ref=f12e166]: 寄卖
+            - text: 件不能走买入单）。
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f12e94] [cursor=pointer]
+  - alert [ref=f12e98]: PO-20260910-001
