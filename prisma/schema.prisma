@@ -40,6 +40,7 @@ model User {
   invoicedSales     SaleOrder[]     @relation("InvoiceIssuer")
   payments          Payment[]
   stockAdjustments  StockAdjustment[]
+  custodyMovements  CustodyMovement[]
 }
 
 model Part {
@@ -198,4 +199,37 @@ model StockAdjustment {
 
   @@index([partId])
   @@index([adjDate])
+}
+
+// 代保管：别家存放在我们仓库的货（只记数量与归属，不进成本/库存价值/报表，不可卖出）
+model CustodyItem {
+  id         String            @id @default(cuid())
+  ownerName  String // 货主（哪家）
+  partNumber String
+  partName   String
+  note       String?
+  qty        Int               @default(0) // 纯保管不允许负（退回 ≤ 现存）
+  isActive   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  movements  CustodyMovement[]
+
+  @@unique([ownerName, partNumber]) // 同货主同配件号只一条，重复入库走 movement
+  @@index([ownerName])
+}
+
+// 代保管出入流水（+ 入库 / − 退回，留痕）
+model CustodyMovement {
+  id            String      @id @default(cuid())
+  custodyItemId String
+  custodyItem   CustodyItem @relation(fields: [custodyItemId], references: [id])
+  qty           Int // + 入库 / − 退回
+  reason        String?
+  moveDate      DateTime
+  createdById   String
+  createdBy     User        @relation(fields: [createdById], references: [id])
+  createdAt     DateTime    @default(now())
+
+  @@index([custodyItemId])
+  @@index([moveDate])
 }
