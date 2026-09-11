@@ -22,7 +22,8 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      // 表头用会计双线（合计线）：双下划线在账簿里标记合计数
+      className={cn("[&_tr]:border-b-[3px] [&_tr]:border-double", className)}
       {...props}
     />
   )

@@ -142,7 +142,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">
+      <h1 className="font-heading text-2xl font-semibold tracking-tight">
         你好，{session?.user?.name ?? ""}
       </h1>
 
@@ -156,7 +156,9 @@ export default async function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-xl font-semibold tabular-nums">{c.value}</p>
+                <p className="font-mono text-xl font-semibold tracking-tight">
+                  {c.value}
+                </p>
               </CardContent>
             </Card>
           </Link>
@@ -167,13 +169,17 @@ export default async function DashboardPage() {
         {alerts.map((a) => (
           <Link key={a.label} href={a.href} className="group">
             <Card className="transition-shadow group-hover:shadow-md">
-              <CardContent className="flex items-center justify-between pt-4">
-                <span className="text-xs text-muted-foreground">{a.label}</span>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  {a.label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <span
                   className={
                     a.tone === "destructive"
-                      ? "text-lg font-semibold tabular-nums text-destructive"
-                      : "text-lg font-semibold tabular-nums"
+                      ? "font-mono text-lg font-semibold tracking-tight text-destructive"
+                      : "font-mono text-lg font-semibold tracking-tight"
                   }
                 >
                   {a.value}
@@ -235,13 +241,13 @@ export default async function DashboardPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Link href={r.href} className="font-medium underline-offset-4 hover:underline">
+                    <Link href={r.href} className="font-mono text-[13px] font-medium underline-offset-4 hover:underline">
                       {r.orderNo}
                     </Link>
                   </TableCell>
                   <TableCell>{formatDateString(r.date)}</TableCell>
                   <TableCell>{r.counterparty}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatUSD(r.amount)}</TableCell>
+                  <TableCell className="text-right font-mono">{formatUSD(r.amount)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <OrderStatusBadge status={r.status} />

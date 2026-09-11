@@ -37,9 +37,12 @@ export const adminNavItem = {
 function NavLinks({
   items,
   pathname,
+  onDark,
 }: {
   items: readonly { href: string; label: string; icon: typeof Package }[];
   pathname: string;
+  /** 深绿侧边栏上：选中态用「纸片」；浅色横栏上：选中态用主绿 */
+  onDark?: boolean;
 }) {
   return (
     <>
@@ -53,8 +56,12 @@ function NavLinks({
             className={cn(
               "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               active
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                ? onDark
+                  ? "bg-background text-foreground shadow-sm dark:bg-sidebar-accent dark:text-sidebar-accent-foreground dark:shadow-none"
+                  : "bg-primary text-primary-foreground"
+                : onDark
+                  ? "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
             )}
           >
             <Icon className="size-4" />
@@ -71,13 +78,15 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   const items = isAdmin ? [...navItems, adminNavItem] : [...navItems];
 
   return (
-    <aside className="hidden w-56 shrink-0 flex-col border-r bg-sidebar md:flex">
-      <div className="flex h-14 items-center gap-2 border-b px-4">
-        <span className="size-2 rounded-full bg-primary" />
-        <span className="font-semibold tracking-tight">sales-flow</span>
+    <aside className="hidden w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+      <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4">
+        <span className="size-2 rounded-[3px] bg-sidebar-primary" />
+        <span className="font-heading text-base font-semibold tracking-tight">
+          sales-flow
+        </span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-3">
-        <NavLinks items={items} pathname={pathname} />
+        <NavLinks items={items} pathname={pathname} onDark />
       </nav>
     </aside>
   );
