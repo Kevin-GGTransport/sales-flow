@@ -1,17 +1,14 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatUSD } from "@/lib/money";
+import { Decimal, formatUSD } from "@/lib/money";
 import { formatDateString, PAYMENT_METHOD_LABEL } from "@/lib/validation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { AddPaymentDialog } from "@/components/payments/PaymentsCard";
+  PayablesTable,
+  PaymentFlowTable,
+  ReceivablesTable,
+  type OutstandingRow,
+  type PaymentFlowRow,
+} from "@/components/payments/PaymentsTables";
 
 export default async function PaymentsPage() {
   const [sales, purchases, recentPayments] = await Promise.all([
@@ -38,18 +35,52 @@ export default async function PaymentsPage() {
     }),
   ]);
 
-  const outstanding = (total: { toNumber: () => number }, ps: { amount: { toNumber: () => number } }[]) =>
-    total.toNumber() - ps.reduce((s, p) => s + p.amount.toNumber(), 0);
+  const toRows = (
+    orders: {
+      id: string;
+      orderNo: string;
+      orderDate: Date;
+      totalAmount: Decimal;
+      payments: { amount: Decimal }[];
+      partyName: string;
+    }[],
+  ): OutstandingRow[] =>
+    orders
+      .map((o) => {
+        const total = o.totalAmount.toNumber();
+        const due = total - o.payments.reduce((s, p) => s + p.amount.toNumber(), 0);
+        return {
+          orderId: o.id,
+          orderNo: o.orderNo,
+          orderDate: formatDateString(o.orderDate),
+          partyName: o.partyName,
+          totalText: formatUSD(o.totalAmount),
+          total,
+          paidText: formatUSD(o.totalAmount.minus(due)),
+          paid: total - due,
+          dueText: formatUSD(due),
+          due,
+        };
+      })
+      .filter((r) => r.due > 0.004);
 
-  const receivables = sales
-    .map((o) => ({ order: o, due: outstanding(o.totalAmount, o.payments) }))
-    .filter((r) => r.due > 0.004);
-  const payables = purchases
-    .map((o) => ({ order: o, due: outstanding(o.totalAmount, o.payments) }))
-    .filter((r) => r.due > 0.004);
+  const receivables = toRows(sales.map((o) => ({ ...o, partyName: o.customerName })));
+  const payables = toRows(purchases.map((o) => ({ ...o, partyName: o.supplierName })));
 
   const totalReceivable = receivables.reduce((s, r) => s + r.due, 0);
   const totalPayable = payables.reduce((s, r) => s + r.due, 0);
+
+  const flowRows: PaymentFlowRow[] = recentPayments.map((p) => ({
+    id: p.id,
+    payDate: formatDateString(p.payDate),
+    direction: p.saleOrderId ? "收入" : "支出",
+    orderNo: p.saleOrder?.orderNo ?? p.purchaseOrder?.orderNo ?? null,
+    method: PAYMENT_METHOD_LABEL[p.method],
+    amountText: formatUSD(p.amount),
+    amount: p.amount.toNumber(),
+    note: p.note,
+    createdBy: p.createdBy.name,
+  }));
 
   return (
     <div className="space-y-4">
@@ -63,7 +94,7 @@ export default async function PaymentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-destructive">
+            <p className="font-mono text-2xl font-semibold tracking-tight text-destructive">
               {formatUSD(totalReceivable)}
             </p>
           </CardContent>
@@ -75,7 +106,7 @@ export default async function PaymentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">
+            <p className="font-mono text-2xl font-semibold tracking-tight">
               {formatUSD(totalPayable)}
             </p>
           </CardContent>
@@ -84,162 +115,17 @@ export default async function PaymentsPage() {
 
       <div className="rounded-lg border">
         <div className="border-b p-3 text-sm font-medium">应收 · 未结清卖出单</div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>单号</TableHead>
-              <TableHead>日期</TableHead>
-              <TableHead>客户</TableHead>
-              <TableHead className="text-right">总金额</TableHead>
-              <TableHead className="text-right">已收</TableHead>
-              <TableHead className="text-right">未结</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {receivables.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-16 text-center text-muted-foreground">
-                  没有未结清的卖出单
-                </TableCell>
-              </TableRow>
-            ) : (
-              receivables.map(({ order, due }) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <Link
-                      href={`/sales/${order.id}`}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {order.orderNo}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{formatDateString(order.orderDate)}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatUSD(order.totalAmount)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatUSD(order.totalAmount.toNumber() - due)}
-                  </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums text-destructive">
-                    {formatUSD(due)}
-                  </TableCell>
-                  <TableCell>
-                    <AddPaymentDialog
-                      kind="sale"
-                      orderId={order.id}
-                      defaultAmount={due.toFixed(2)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <ReceivablesTable rows={receivables} />
       </div>
 
       <div className="rounded-lg border">
         <div className="border-b p-3 text-sm font-medium">应付 · 未结清买入单</div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>单号</TableHead>
-              <TableHead>日期</TableHead>
-              <TableHead>供应商</TableHead>
-              <TableHead className="text-right">总金额</TableHead>
-              <TableHead className="text-right">已付</TableHead>
-              <TableHead className="text-right">未结</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {payables.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-16 text-center text-muted-foreground">
-                  没有未结清的买入单
-                </TableCell>
-              </TableRow>
-            ) : (
-              payables.map(({ order, due }) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <Link
-                      href={`/purchases/${order.id}`}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {order.orderNo}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{formatDateString(order.orderDate)}</TableCell>
-                  <TableCell>{order.supplierName}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatUSD(order.totalAmount)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatUSD(order.totalAmount.toNumber() - due)}
-                  </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums text-destructive">
-                    {formatUSD(due)}
-                  </TableCell>
-                  <TableCell>
-                    <AddPaymentDialog
-                      kind="purchase"
-                      orderId={order.id}
-                      defaultAmount={due.toFixed(2)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <PayablesTable rows={payables} />
       </div>
 
       <div className="rounded-lg border">
         <div className="border-b p-3 text-sm font-medium">近期收付款流水</div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>日期</TableHead>
-              <TableHead>方向</TableHead>
-              <TableHead>单号</TableHead>
-              <TableHead>方式</TableHead>
-              <TableHead className="text-right">金额</TableHead>
-              <TableHead>备注</TableHead>
-              <TableHead>经办</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recentPayments.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-16 text-center text-muted-foreground">
-                  还没有收付款记录
-                </TableCell>
-              </TableRow>
-            ) : (
-              recentPayments.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>{formatDateString(p.payDate)}</TableCell>
-                  <TableCell>
-                    {p.saleOrderId ? (
-                      <span className="text-primary">收入</span>
-                    ) : (
-                      <span className="text-muted-foreground">支出</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{p.saleOrder?.orderNo ?? p.purchaseOrder?.orderNo}</TableCell>
-                  <TableCell>{PAYMENT_METHOD_LABEL[p.method]}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatUSD(p.amount)}
-                  </TableCell>
-                  <TableCell>{p.note ?? "-"}</TableCell>
-                  <TableCell>{p.createdBy.name}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <PaymentFlowTable rows={flowRows} />
       </div>
     </div>
   );

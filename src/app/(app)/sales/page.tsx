@@ -2,7 +2,6 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { formatDateString } from "@/lib/validation";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,15 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { SalesTable, type SaleRow } from "@/components/sales/SalesTable";
 
 export default async function SalesPage({
   searchParams,
@@ -56,6 +47,19 @@ export default async function SalesPage({
     orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
     take: 100,
   });
+
+  const rows: SaleRow[] = orders.map((o) => ({
+    id: o.id,
+    orderNo: o.orderNo,
+    orderDate: formatDateString(o.orderDate),
+    customerName: o.customerName,
+    lines: o._count.lines,
+    totalAmountText: formatUSD(o.totalAmount),
+    totalAmount: o.totalAmount.toNumber(),
+    invoiceNo: o.invoiceNo,
+    status: o.status,
+    createdBy: o.createdBy.name,
+  }));
 
   return (
     <div className="space-y-4">
@@ -99,61 +103,7 @@ export default async function SalesPage({
       </form>
 
       <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>单号</TableHead>
-              <TableHead>日期</TableHead>
-              <TableHead>客户</TableHead>
-              <TableHead className="text-right">行数</TableHead>
-              <TableHead className="text-right">总金额</TableHead>
-              <TableHead>开票</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>录单人</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                  没有卖出单
-                </TableCell>
-              </TableRow>
-            ) : (
-              orders.map((order) => (
-                <TableRow key={order.id} className={order.status === "VOID" ? "opacity-60" : ""}>
-                  <TableCell>
-                    <Link
-                      href={`/sales/${order.id}`}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {order.orderNo}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{formatDateString(order.orderDate)}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
-                  <TableCell className="text-right">{order._count.lines}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatUSD(order.totalAmount)}
-                  </TableCell>
-                  <TableCell>
-                    {order.invoiceNo ? (
-                      <span className="text-xs">{order.invoiceNo}</span>
-                    ) : order.status === "ACTIVE" ? (
-                      <Badge variant="secondary">未开票</Badge>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <OrderStatusBadge status={order.status} />
-                  </TableCell>
-                  <TableCell>{order.createdBy.name}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <SalesTable rows={rows} />
       </div>
     </div>
   );

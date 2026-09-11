@@ -5,19 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  CustodyMoveDialog,
-  EditCustodyItemDialog,
-  NewCustodyItemDialog,
-  ToggleCustodyItemButton,
-} from "@/components/custody/CustodyDialogs";
+  CustodyItemsTable,
+  CustodyFlowTable,
+  type CustodyFlowRow,
+  type CustodyItemRow,
+} from "@/components/custody/CustodyTables";
+import { NewCustodyItemDialog } from "@/components/custody/CustodyDialogs";
 
 const FLOW_PAGE_SIZE = 50;
 
@@ -92,6 +85,28 @@ export default async function CustodyPage({
 
   const itemById = new Map(items.map((i) => [i.id, i]));
 
+  const itemRows: CustodyItemRow[] = items.map((i) => ({
+    id: i.id,
+    ownerName: i.ownerName,
+    partNumber: i.partNumber,
+    partName: i.partName,
+    qty: i.qty,
+    note: i.note,
+    isActive: i.isActive,
+  }));
+
+  const flowRows: CustodyFlowRow[] = movements.map((m) => {
+    const item = itemById.get(m.custodyItemId)!;
+    return {
+      id: m.id,
+      moveDate: formatDateString(m.moveDate),
+      label: `${item.ownerName} / ${item.partNumber}`,
+      qty: m.qty,
+      note: m.reason,
+      createdBy: m.createdBy.name,
+    };
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -108,7 +123,7 @@ export default async function CustodyPage({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xl font-semibold tabular-nums">{s.value}</p>
+              <p className="font-mono text-xl font-semibold tracking-tight">{s.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -164,118 +179,20 @@ export default async function CustodyPage({
       )}
 
       <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>货主</TableHead>
-              <TableHead>配件号</TableHead>
-              <TableHead>名称</TableHead>
-              <TableHead className="text-right">现存数量</TableHead>
-              <TableHead>备注</TableHead>
-              <TableHead className="text-right">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  {keyword || ownerFilter ? "没有匹配的代保管货品" : "还没有代保管货品，点右上角「登记代保管」"}
-                </TableCell>
-              </TableRow>
-            ) : (
-              items.map((item) => (
-                <TableRow key={item.id} className={item.isActive ? "" : "opacity-50"}>
-                  <TableCell className="font-medium">
-                    {item.ownerName}
-                    {!item.isActive && (
-                      <span className="ml-2 text-xs text-muted-foreground">已停用</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{item.partNumber}</TableCell>
-                  <TableCell>{item.partName}</TableCell>
-                  <TableCell className="text-right tabular-nums">{item.qty}</TableCell>
-                  <TableCell className="max-w-48 truncate text-muted-foreground">
-                    {item.note ?? "-"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <CustodyMoveDialog
-                        custodyItemId={item.id}
-                        ownerName={item.ownerName}
-                        partNumber={item.partNumber}
-                        qty={item.qty}
-                      />
-                      <EditCustodyItemDialog
-                        initial={{
-                          id: item.id,
-                          ownerName: item.ownerName,
-                          partNumber: item.partNumber,
-                          partName: item.partName,
-                          note: item.note ?? "",
-                        }}
-                      />
-                      <ToggleCustodyItemButton
-                        custodyItemId={item.id}
-                        isActive={item.isActive}
-                        label={item.isActive ? "停用" : "启用"}
-                      />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <CustodyItemsTable
+          rows={itemRows}
+          empty={
+            keyword || ownerFilter ? "没有匹配的代保管货品" : undefined
+          }
+        />
       </div>
 
       {items.length > 0 && (
         <div className="rounded-lg border">
           <div className="border-b p-3 text-sm font-medium">
-            出入流水（当前列表 · 新→旧{movements.length === FLOW_PAGE_SIZE ? `，仅显示最近 ${FLOW_PAGE_SIZE} 条` : ""}）
+            出入流水（当前列表{movements.length === FLOW_PAGE_SIZE ? ` · 仅显示最近 ${FLOW_PAGE_SIZE} 条` : ""}）
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>日期</TableHead>
-                <TableHead>货主 / 配件</TableHead>
-                <TableHead className="text-right">数量变动</TableHead>
-                <TableHead>备注</TableHead>
-                <TableHead>经手人</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {movements.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-16 text-center text-muted-foreground">
-                    还没有出入记录
-                  </TableCell>
-                </TableRow>
-              ) : (
-                movements.map((m) => {
-                  const item = itemById.get(m.custodyItemId)!;
-                  return (
-                    <TableRow key={m.id}>
-                      <TableCell>{formatDateString(m.moveDate)}</TableCell>
-                      <TableCell>
-                        {item.ownerName} / {item.partNumber}
-                      </TableCell>
-                      <TableCell
-                        className={
-                          m.qty > 0
-                            ? "text-right tabular-nums text-primary"
-                            : "text-right tabular-nums text-muted-foreground"
-                        }
-                      >
-                        {m.qty > 0 ? `+${m.qty}` : m.qty}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{m.reason ?? "-"}</TableCell>
-                      <TableCell className="text-muted-foreground">{m.createdBy.name}</TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+          <CustodyFlowTable rows={flowRows} />
         </div>
       )}
     </div>

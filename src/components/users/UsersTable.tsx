@@ -30,14 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
 
 export type UserRow = {
   id: string;
@@ -179,6 +172,68 @@ export function UsersTable({ users, meId }: { users: UserRow[]; meId: string }) 
     startTransition(() => router.refresh());
   }
 
+  const columns: DataTableColumn<UserRow>[] = [
+    {
+      key: "username",
+      header: "用户名",
+      sortValue: (u) => u.username,
+      cell: (u) => (
+        <>
+          <span className="font-medium">{u.username}</span>
+          {u.id === meId && <span className="ml-2 text-xs text-muted-foreground">（我）</span>}
+        </>
+      ),
+    },
+    { key: "name", header: "显示名", sortValue: (u) => u.name, cell: (u) => u.name },
+    {
+      key: "role",
+      header: "角色",
+      sortValue: (u) => (u.role === "ADMIN" ? "管理员" : "员工"),
+      cell: (u) => (
+        <Select
+          value={u.role}
+          onValueChange={(v) => run(() => setUserRole(u.id, v as "ADMIN" | "STAFF"))}
+          disabled={pending || u.id === meId}
+        >
+          <SelectTrigger className="h-8 w-28">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ADMIN">管理员</SelectItem>
+            <SelectItem value="STAFF">员工</SelectItem>
+          </SelectContent>
+        </Select>
+      ),
+    },
+    {
+      key: "status",
+      header: "状态",
+      sortValue: (u) => (u.isActive ? "在用" : "已停用"),
+      cell: (u) =>
+        u.isActive ? <Badge>在用</Badge> : <Badge variant="destructive">已停用</Badge>,
+    },
+    {
+      key: "actions",
+      header: "操作",
+      align: "right",
+      className: "w-0",
+      cell: (u) => (
+        <div className="flex justify-end gap-1">
+          <ResetPasswordDialog userId={u.id} username={u.username} />
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={u.isActive ? "停用" : "启用"}
+            onClick={() => run(() => setUserActive(u.id, !u.isActive))}
+            disabled={pending || (u.id === meId && u.isActive)}
+          >
+            <Power className="size-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -187,64 +242,13 @@ export function UsersTable({ users, meId }: { users: UserRow[]; meId: string }) 
       </div>
 
       <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>用户名</TableHead>
-              <TableHead>显示名</TableHead>
-              <TableHead>角色</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead className="text-right">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((u) => (
-              <TableRow key={u.id} className={u.isActive ? "" : "opacity-50"}>
-                <TableCell className="font-medium">
-                  {u.username}
-                  {u.id === meId && <span className="ml-2 text-xs text-muted-foreground">（我）</span>}
-                </TableCell>
-                <TableCell>{u.name}</TableCell>
-                <TableCell>
-                  <Select
-                    value={u.role}
-                    onValueChange={(v) => run(() => setUserRole(u.id, v as "ADMIN" | "STAFF"))}
-                    disabled={pending || u.id === meId}
-                  >
-                    <SelectTrigger className="h-8 w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ADMIN">管理员</SelectItem>
-                      <SelectItem value="STAFF">员工</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  {u.isActive ? (
-                    <Badge>在用</Badge>
-                  ) : (
-                    <Badge variant="destructive">已停用</Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <ResetPasswordDialog userId={u.id} username={u.username} />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={u.isActive ? "停用" : "启用"}
-                      onClick={() => run(() => setUserActive(u.id, !u.isActive))}
-                      disabled={pending || (u.id === meId && u.isActive)}
-                    >
-                      <Power className="size-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataTable
+          columns={columns}
+          rows={users}
+          rowKey={(u) => u.id}
+          empty="还没有用户"
+          rowClassName={(u) => (u.isActive ? "" : "opacity-50")}
+        />
       </div>
     </div>
   );

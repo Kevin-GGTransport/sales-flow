@@ -11,15 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { PurchasesTable, type PurchaseRow } from "@/components/purchases/PurchasesTable";
 
 export default async function PurchasesPage({
   searchParams,
@@ -48,6 +40,18 @@ export default async function PurchasesPage({
     orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
     take: 100,
   });
+
+  const rows: PurchaseRow[] = orders.map((o) => ({
+    id: o.id,
+    orderNo: o.orderNo,
+    orderDate: formatDateString(o.orderDate),
+    supplierName: o.supplierName,
+    lines: o._count.lines,
+    totalAmountText: formatUSD(o.totalAmount),
+    totalAmount: o.totalAmount.toNumber(),
+    status: o.status,
+    createdBy: o.createdBy.name,
+  }));
 
   return (
     <div className="space-y-4">
@@ -81,51 +85,7 @@ export default async function PurchasesPage({
       </form>
 
       <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>单号</TableHead>
-              <TableHead>日期</TableHead>
-              <TableHead>供应商</TableHead>
-              <TableHead className="text-right">行数</TableHead>
-              <TableHead className="text-right">总金额</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>录单人</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  没有买入单
-                </TableCell>
-              </TableRow>
-            ) : (
-              orders.map((order) => (
-                <TableRow key={order.id} className={order.status === "VOID" ? "opacity-60" : ""}>
-                  <TableCell>
-                    <Link
-                      href={`/purchases/${order.id}`}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {order.orderNo}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{formatDateString(order.orderDate)}</TableCell>
-                  <TableCell>{order.supplierName}</TableCell>
-                  <TableCell className="text-right">{order._count.lines}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatUSD(order.totalAmount)}
-                  </TableCell>
-                  <TableCell>
-                    <OrderStatusBadge status={order.status} />
-                  </TableCell>
-                  <TableCell>{order.createdBy.name}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <PurchasesTable rows={rows} />
       </div>
     </div>
   );

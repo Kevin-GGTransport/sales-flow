@@ -3,15 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { PartsTable, type PartRow } from "@/components/parts/PartsTable";
 
 export default async function PartsPage({
   searchParams,
@@ -37,6 +29,25 @@ export default async function PartsPage({
     orderBy: { partNumber: "asc" },
   });
 
+  const rows: PartRow[] = parts.map((p) => {
+    const qty = p.inventory?.qty ?? 0;
+    const avg = p.inventory?.avgCost ?? null;
+    const value = p.isConsignment ? null : avg ? avg.mul(qty) : null;
+    return {
+      id: p.id,
+      partNumber: p.partNumber,
+      name: p.name,
+      brand: p.brand,
+      isConsignment: p.isConsignment,
+      qty,
+      avgText: p.isConsignment ? "-" : formatUSD(avg),
+      avg: p.isConsignment ? null : avg ? avg.toNumber() : null,
+      valueText: p.isConsignment ? "-" : formatUSD(value),
+      value: value ? value.toNumber() : null,
+      isActive: p.isActive,
+    };
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -47,12 +58,7 @@ export default async function PartsPage({
       </div>
 
       <form className="flex flex-wrap items-center gap-2">
-        <Input
-          name="q"
-          defaultValue={keyword}
-          placeholder="搜索配件号 / 名称 / 品牌"
-          className="w-72"
-        />
+        <Input name="q" defaultValue={keyword} placeholder="搜索配件号 / 名称 / 品牌" className="w-72" />
         <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <input
             type="checkbox"
@@ -69,71 +75,10 @@ export default async function PartsPage({
       </form>
 
       <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>配件号</TableHead>
-              <TableHead>名称</TableHead>
-              <TableHead>品牌</TableHead>
-              <TableHead>类型</TableHead>
-              <TableHead className="text-right">库存</TableHead>
-              <TableHead className="text-right">平均成本</TableHead>
-              <TableHead className="text-right">库存价值</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {parts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  {keyword ? "没有匹配的配件" : "还没有配件，点右上角「新建配件」"}
-                </TableCell>
-              </TableRow>
-            ) : (
-              parts.map((part) => {
-                const qty = part.inventory?.qty ?? 0;
-                const avg = part.inventory?.avgCost ?? null;
-                const value = part.isConsignment
-                  ? null
-                  : avg
-                    ? avg.mul(qty)
-                    : null;
-                return (
-                  <TableRow key={part.id} className={part.isActive ? "" : "opacity-50"}>
-                    <TableCell>
-                      <Link
-                        href={`/parts/${part.id}`}
-                        className="font-medium underline-offset-4 hover:underline"
-                      >
-                        {part.partNumber}
-                      </Link>
-                      {!part.isActive && (
-                        <span className="ml-2 text-xs text-muted-foreground">已停用</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{part.name}</TableCell>
-                    <TableCell>{part.brand ?? "-"}</TableCell>
-                    <TableCell>
-                      {part.isConsignment ? (
-                        <Badge variant="outline">寄卖</Badge>
-                      ) : (
-                        <Badge variant="secondary">自营</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className={qty < 0 ? "text-right font-medium text-destructive" : "text-right"}>
-                      {qty}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {part.isConsignment ? "-" : formatUSD(avg)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {part.isConsignment ? "-" : formatUSD(value)}
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+        <PartsTable
+          rows={rows}
+          empty={keyword ? "没有匹配的配件" : undefined}
+        />
       </div>
     </div>
   );

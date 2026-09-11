@@ -4,17 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { Decimal } from "@/lib/money";
 import { formatDateString } from "@/lib/validation";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { RecentOrdersTable, type RecentOrderRow } from "@/components/orders/RecentOrdersTable";
 
 function monthRangeUtc(): { start: Date; end: Date } {
   const now = new Date();
@@ -140,6 +131,37 @@ export default async function DashboardPage() {
     },
   ];
 
+  const recentRows: RecentOrderRow[] = [
+    ...recentPurchases.map((o) => ({
+      id: o.id,
+      kind: "买入" as const,
+      href: `/purchases/${o.id}`,
+      orderNo: o.orderNo,
+      orderDate: formatDateString(o.orderDate),
+      counterparty: o.supplierName,
+      amountText: formatUSD(o.totalAmount),
+      amount: o.totalAmount.toNumber(),
+      status: o.status,
+      invoiceNo: null,
+      createdBy: o.createdBy.name,
+    })),
+    ...recentSales.map((o) => ({
+      id: o.id,
+      kind: "卖出" as const,
+      href: `/sales/${o.id}`,
+      orderNo: o.orderNo,
+      orderDate: formatDateString(o.orderDate),
+      counterparty: o.customerName,
+      amountText: formatUSD(o.totalAmount),
+      amount: o.totalAmount.toNumber(),
+      status: o.status,
+      invoiceNo: o.invoiceNo,
+      createdBy: o.createdBy.name,
+    })),
+  ]
+    .sort((a, b) => b.orderDate.localeCompare(a.orderDate))
+    .slice(0, 10);
+
   return (
     <div className="space-y-6">
       <h1 className="font-heading text-2xl font-semibold tracking-tight">
@@ -192,73 +214,7 @@ export default async function DashboardPage() {
 
       <div className="rounded-lg border">
         <div className="border-b p-3 text-sm font-medium">最近单据</div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>类型</TableHead>
-              <TableHead>单号</TableHead>
-              <TableHead>日期</TableHead>
-              <TableHead>对方</TableHead>
-              <TableHead className="text-right">金额</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>录单人</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {[
-              ...recentPurchases.map((o) => ({
-                id: o.id,
-                kind: "买入" as const,
-                href: `/purchases/${o.id}`,
-                orderNo: o.orderNo,
-                date: o.orderDate,
-                counterparty: o.supplierName,
-                amount: o.totalAmount,
-                status: o.status,
-                invoice: null as string | null,
-                by: o.createdBy.name,
-              })),
-              ...recentSales.map((o) => ({
-                id: o.id,
-                kind: "卖出" as const,
-                href: `/sales/${o.id}`,
-                orderNo: o.orderNo,
-                date: o.orderDate,
-                counterparty: o.customerName,
-                amount: o.totalAmount,
-                status: o.status,
-                invoice: o.invoiceNo,
-                by: o.createdBy.name,
-              })),
-            ]
-              .sort((a, b) => b.date.getTime() - a.date.getTime())
-              .slice(0, 10)
-              .map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell>
-                    <Badge variant={r.kind === "买入" ? "secondary" : "outline"}>
-                      {r.kind}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Link href={r.href} className="font-mono text-[13px] font-medium underline-offset-4 hover:underline">
-                      {r.orderNo}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{formatDateString(r.date)}</TableCell>
-                  <TableCell>{r.counterparty}</TableCell>
-                  <TableCell className="text-right font-mono">{formatUSD(r.amount)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <OrderStatusBadge status={r.status} />
-                      {r.invoice && <span className="text-xs text-muted-foreground">{r.invoice}</span>}
-                    </div>
-                  </TableCell>
-                  <TableCell>{r.by}</TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
+        <RecentOrdersTable rows={recentRows} />
       </div>
     </div>
   );

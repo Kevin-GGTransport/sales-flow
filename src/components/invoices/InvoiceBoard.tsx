@@ -8,14 +8,7 @@ import { Download, FileText, Undo2 } from "lucide-react";
 import { markInvoiced, revokeInvoice } from "@/actions/invoices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
 
 export type UninvoicedOrder = {
   id: string;
@@ -97,6 +90,109 @@ export function InvoiceBoard({
     startTransition(() => router.refresh());
   }
 
+  const uninvoicedColumns: DataTableColumn<UninvoicedOrder>[] = [
+    {
+      key: "check",
+      header: (
+        <input
+          type="checkbox"
+          checked={uninvoiced.length > 0 && selected.size === uninvoiced.length}
+          onChange={toggleAll}
+          aria-label="全选"
+          className="size-4"
+        />
+      ),
+      className: "w-10",
+      cell: (o) => (
+        <input
+          type="checkbox"
+          checked={selected.has(o.id)}
+          onChange={() => toggle(o.id)}
+          aria-label={`选择 ${o.orderNo}`}
+          className="size-4"
+        />
+      ),
+    },
+    {
+      key: "orderNo",
+      header: "单号",
+      mono: true,
+      sortValue: (o) => o.orderNo,
+      cell: (o) => (
+        <Link
+          href={`/sales/${o.id}`}
+          className="text-[13px] font-medium underline-offset-4 hover:underline"
+        >
+          {o.orderNo}
+        </Link>
+      ),
+    },
+    { key: "orderDate", header: "日期", sortValue: (o) => o.orderDate, cell: (o) => o.orderDate },
+    { key: "customer", header: "客户", sortValue: (o) => o.customerName, cell: (o) => o.customerName },
+    {
+      key: "amount",
+      header: "金额",
+      align: "right",
+      mono: true,
+      sortValue: (o) => Number(o.totalAmount),
+      cell: (o) => `$${o.totalAmount}`,
+    },
+  ];
+
+  const invoicedColumns: DataTableColumn<InvoicedOrder>[] = [
+    { key: "invoiceNo", header: "发票号", mono: true, sortValue: (o) => o.invoiceNo, cell: (o) => <span className="font-medium">{o.invoiceNo}</span> },
+    { key: "invoiceDate", header: "开票日期", sortValue: (o) => o.invoiceDate, cell: (o) => o.invoiceDate },
+    {
+      key: "orderNo",
+      header: "单号",
+      mono: true,
+      sortValue: (o) => o.orderNo,
+      cell: (o) => (
+        <Link
+          href={`/sales/${o.id}`}
+          className="text-[13px] underline-offset-4 hover:underline"
+        >
+          {o.orderNo}
+        </Link>
+      ),
+    },
+    { key: "customer", header: "客户", sortValue: (o) => o.customerName, cell: (o) => o.customerName },
+    {
+      key: "amount",
+      header: "金额",
+      align: "right",
+      mono: true,
+      sortValue: (o) => Number(o.totalAmount),
+      cell: (o) => `$${o.totalAmount}`,
+    },
+    {
+      key: "actions",
+      header: "操作",
+      className: "w-0",
+      cell: (o) => (
+        <div className="flex gap-1">
+          <Button asChild variant="ghost" size="sm">
+            <a href={`/api/invoices/${o.id}/pdf`} target="_blank" rel="noreferrer">
+              <Download className="size-4" />
+              PDF
+            </a>
+          </Button>
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleRevoke(o.id)}
+              disabled={pending}
+            >
+              <Undo2 className="size-4" />
+              撤销
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="rounded-lg border">
@@ -117,124 +213,24 @@ export function InvoiceBoard({
             </Button>
           </div>
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10">
-                <input
-                  type="checkbox"
-                  checked={uninvoiced.length > 0 && selected.size === uninvoiced.length}
-                  onChange={toggleAll}
-                  aria-label="全选"
-                  className="size-4"
-                />
-              </TableHead>
-              <TableHead>单号</TableHead>
-              <TableHead>日期</TableHead>
-              <TableHead>客户</TableHead>
-              <TableHead className="text-right">金额</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {uninvoiced.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-16 text-center text-muted-foreground">
-                  没有待开票的卖出单
-                </TableCell>
-              </TableRow>
-            ) : (
-              uninvoiced.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell>
-                    <input
-                      type="checkbox"
-                      checked={selected.has(o.id)}
-                      onChange={() => toggle(o.id)}
-                      aria-label={`选择 ${o.orderNo}`}
-                      className="size-4"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/sales/${o.id}`}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {o.orderNo}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{o.orderDate}</TableCell>
-                  <TableCell>{o.customerName}</TableCell>
-                  <TableCell className="text-right tabular-nums">${o.totalAmount}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <DataTable
+          columns={uninvoicedColumns}
+          rows={uninvoiced}
+          rowKey={(o) => o.id}
+          empty="没有待开票的卖出单"
+        />
       </div>
 
       <div className="rounded-lg border">
         <div className="border-b p-3 text-sm font-medium">
           已开票（{invoiced.length}）
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>发票号</TableHead>
-              <TableHead>开票日期</TableHead>
-              <TableHead>单号</TableHead>
-              <TableHead>客户</TableHead>
-              <TableHead className="text-right">金额</TableHead>
-              <TableHead>操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {invoiced.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-16 text-center text-muted-foreground">
-                  还没有已开票的单
-                </TableCell>
-              </TableRow>
-            ) : (
-              invoiced.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell className="font-medium">{o.invoiceNo}</TableCell>
-                  <TableCell>{o.invoiceDate}</TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/sales/${o.id}`}
-                      className="underline-offset-4 hover:underline"
-                    >
-                      {o.orderNo}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{o.customerName}</TableCell>
-                  <TableCell className="text-right tabular-nums">${o.totalAmount}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button asChild variant="ghost" size="sm">
-                        <a href={`/api/invoices/${o.id}/pdf`} target="_blank" rel="noreferrer">
-                          <Download className="size-4" />
-                          PDF
-                        </a>
-                      </Button>
-                      {isAdmin && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRevoke(o.id)}
-                          disabled={pending}
-                        >
-                          <Undo2 className="size-4" />
-                          撤销
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <DataTable
+          columns={invoicedColumns}
+          rows={invoiced}
+          rowKey={(o) => o.id}
+          empty="还没有已开票的单"
+        />
       </div>
     </div>
   );
