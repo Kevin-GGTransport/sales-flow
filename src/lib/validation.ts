@@ -18,6 +18,15 @@ export const partSchema = z.object({
   brand: z.string().trim().max(100, "品牌过长"),
   description: z.string().trim().max(500, "备注过长"),
   isConsignment: checkbox,
+  // 安全库存阈值：空值/缺省 → 0（不预警）
+  minQty: z.preprocess(
+    (v) => (v === "" || v == null ? 0 : Number(v)),
+    z
+      .number()
+      .int("安全库存阈值必须为整数")
+      .min(0, "安全库存阈值不能为负")
+      .max(1_000_000, "安全库存阈值过大"),
+  ),
 });
 
 export type PartInput = z.infer<typeof partSchema>;

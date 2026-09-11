@@ -17,6 +17,7 @@ export type PartFormValues = {
   brand: string;
   description: string;
   isConsignment: boolean;
+  minQty?: number;
 };
 
 export function PartForm({ initial }: { initial?: PartFormValues }) {
@@ -91,6 +92,21 @@ export function PartForm({ initial }: { initial?: PartFormValues }) {
             寄卖件（如明治品牌）不进成本/利润体系：入库走「寄卖入库/退回」，卖出只消库存
           </p>
         </div>
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="minQty">安全库存阈值</Label>
+        <Input
+          id="minQty"
+          name="minQty"
+          type="number"
+          min={0}
+          step={1}
+          inputMode="numeric"
+          defaultValue={initial?.minQty ?? 0}
+        />
+        <p className="text-xs text-muted-foreground">
+          库存数量 ≤ 该值时预警（库存页 / 仪表盘）；0 = 不预警。寄卖件也可设置
+        </p>
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>

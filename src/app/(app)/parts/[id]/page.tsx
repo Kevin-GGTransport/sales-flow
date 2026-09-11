@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { formatDateString } from "@/lib/validation";
@@ -47,8 +48,14 @@ export default async function PartDetailPage({
   });
   if (!part) notFound();
 
+  // 页面层只控制按钮显隐（UX），真正的权限在 action 层强制
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
+
   const qty = part.inventory?.qty ?? 0;
   const avg = part.inventory?.avgCost ?? null;
+  const lowStock = part.minQty > 0 && qty >= 0 && qty <= part.minQty;
+  const adjLabel = part.isConsignment ? "寄卖调整" : "库存调整";
 
   const history: HistoryRow[] = [
     ...part.purchaseLines.map((l) => ({
@@ -77,7 +84,7 @@ export default async function PartDetailPage({
       key: `a-${a.id}`,
       date: a.adjDate,
       kind: "ADJ" as const,
-      label: "寄卖调整",
+      label: adjLabel,
       ref: a.reason ?? "",
       href: "#",
       qty: a.qty,
@@ -102,8 +109,12 @@ export default async function PartDetailPage({
           {!part.isActive && <Badge variant="destructive">已停用</Badge>}
         </div>
         <div className="flex gap-2">
-          {part.isConsignment && (
-            <StockAdjustDialog partId={part.id} partNumber={part.partNumber} />
+          {(part.isConsignment || isAdmin) && (
+            <StockAdjustDialog
+              partId={part.id}
+              partNumber={part.partNumber}
+              isConsignment={part.isConsignment}
+            />
           )}
           <EditPartDialog
             initial={{
@@ -113,6 +124,7 @@ export default async function PartDetailPage({
               brand: part.brand ?? "",
               description: part.description ?? "",
               isConsignment: part.isConsignment,
+              minQty: part.minQty,
             }}
           />
         </div>
@@ -127,6 +139,11 @@ export default async function PartDetailPage({
             <p className={qty < 0 ? "text-2xl font-semibold text-destructive" : "text-2xl font-semibold"}>
               {qty}
             </p>
+            {lowStock && (
+              <p className="mt-1 text-xs text-destructive">
+                {qty === 0 ? "已无库存" : "低于安全库存"}（阈值 {part.minQty}）
+              </p>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -158,6 +175,7 @@ export default async function PartDetailPage({
         <CardContent className="grid gap-1 text-sm">
           <p>名称：{part.name}</p>
           <p>品牌：{part.brand ?? "-"}</p>
+          <p>安全库存阈值：{part.minQty > 0 ? part.minQty : "不预警"}</p>
           <p className="whitespace-pre-wrap">备注：{part.description ?? "-"}</p>
         </CardContent>
       </Card>

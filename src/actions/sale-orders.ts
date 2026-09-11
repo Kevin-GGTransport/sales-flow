@@ -119,6 +119,7 @@ export async function createSaleOrder(
 
     revalidatePath("/sales");
     revalidatePath("/parts");
+    revalidatePath("/inventory");
     redirect(result.id ? `/sales/${result.id}` : "/sales");
   } catch (e) {
     if (e && typeof e === "object" && "digest" in e) throw e; // Next redirect
@@ -169,6 +170,7 @@ export async function voidSaleOrder(
     revalidatePath("/sales");
     revalidatePath(`/sales/${id}`);
     revalidatePath("/parts");
+    revalidatePath("/inventory");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "作废失败" };

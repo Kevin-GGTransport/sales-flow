@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Boxes,
   FileText,
   LayoutDashboard,
   Package,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 export const navItems = [
   { href: "/", label: "仪表盘", icon: LayoutDashboard },
   { href: "/parts", label: "配件", icon: Package },
+  { href: "/inventory", label: "库存", icon: Boxes },
   { href: "/purchases", label: "买入单", icon: ShoppingCart },
   { href: "/sales", label: "卖出单", icon: TrendingUp },
   { href: "/payments", label: "销账", icon: Wallet },

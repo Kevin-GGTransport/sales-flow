@@ -1,7 +1,13 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { Decimal } from "@/lib/money";
-import { applyPurchase, applySale, ZERO_STATE, type InventoryState } from "@/lib/weighted-average";
+import {
+  applyAdjustment,
+  applyPurchase,
+  applySale,
+  ZERO_STATE,
+  type InventoryState,
+} from "@/lib/weighted-average";
 
 export type Tx = Prisma.TransactionClient;
 
@@ -29,7 +35,16 @@ export async function lockInventoryRows(
   return map;
 }
 
-type ReplayEvent = { date: Date; createdAt: Date; seq: number; kind: "IN" | "OUT"; qty: number; price?: Prisma.Decimal };
+type ReplayEvent = {
+  date: Date;
+  createdAt: Date;
+  seq: number;
+  kind: "IN" | "OUT";
+  qty: number;
+  price?: Prisma.Decimal;
+  /** 库存调整（寄卖入库/退回、自营盘盈/盘亏）：只动数量不动均价（盘盈成本基础 0） */
+  qtyOnly?: boolean;
+};
 
 /**
  * 重放法重算一个配件的库存：按时间顺序回放全部 ACTIVE 单据行（+ 寄卖调整），
@@ -82,7 +97,8 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
     });
   }
 
-  // 寄卖调整（只对寄卖件开放，但重放时不信任历史数据，统一回放数量）
+  // 库存调整（寄卖入库/退回、自营盘盈/盘亏）：一律 qty-only 回放，
+  // 标记来自事件来源而非配件属性——Part 翻转寄卖/自营后历史调整行为不变
   const adjustments = await tx.stockAdjustment.findMany({
     where: { partId },
     select: { qty: true, adjDate: true, createdAt: true },
@@ -94,6 +110,7 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
       seq: seq++,
       kind: adj.qty >= 0 ? "IN" : "OUT",
       qty: Math.abs(adj.qty),
+      qtyOnly: true,
     });
   }
 
@@ -112,6 +129,12 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
         qty: state.qty + (ev.kind === "IN" ? ev.qty : -ev.qty),
         avgCost: state.avgCost,
       };
+    } else if (ev.qtyOnly) {
+      // 盘盈/盘亏：只动数量不动均价（adjustment 无 price，不能走 applyPurchase）
+      state = applyAdjustment(
+        state,
+        ev.kind === "IN" ? ev.qty : -ev.qty,
+      );
     } else if (ev.kind === "IN") {
       state = applyPurchase(state, ev.qty, ev.price!);
     } else {

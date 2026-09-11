@@ -16,6 +16,7 @@ function parseForm(formData: FormData) {
     brand: formData.get("brand") ?? "",
     description: formData.get("description") ?? "",
     isConsignment: formData.get("isConsignment"),
+    minQty: formData.get("minQty") ?? "",
   });
 }
 
@@ -38,6 +39,7 @@ export async function createPart(
       },
     });
     revalidatePath("/parts");
+    revalidatePath("/inventory");
     return { ok: true, id: part.id };
   } catch (e) {
     if (e instanceof Error && e.message.includes("Unique")) {
@@ -64,6 +66,7 @@ export async function updatePart(
       data: { ...rest, brand: brand || null },
     });
     revalidatePath("/parts");
+    revalidatePath("/inventory");
     revalidatePath(`/parts/${id}`);
     return { ok: true, id };
   } catch (e) {
@@ -79,6 +82,7 @@ export async function togglePartActive(id: string, next: boolean): Promise<Actio
     await requireUser();
     await prisma.part.update({ where: { id }, data: { isActive: next } });
     revalidatePath("/parts");
+    revalidatePath("/inventory");
     revalidatePath(`/parts/${id}`);
     return { ok: true };
   } catch (e) {

@@ -49,6 +49,7 @@ model Part {
   brand         String? // 品牌；明治 → 寄卖
   description   String? // 规格 / 适配车型备注
   isConsignment Boolean  @default(false) // 寄卖件：不进成本/利润体系，入库走库存调整
+  minQty        Int      @default(0) // 安全库存阈值：>0 时 qty≤该值触发低库存预警；0=不预警
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -182,12 +183,13 @@ model Payment {
   @@index([purchaseOrderId])
 }
 
-// 库存调整：仅限寄卖配件（明治件入库/退回），只动数量不记钱
+// 库存调整：寄卖件入库/退回（STAFF）；自营件盘盈/盘亏（ADMIN）。
+// 只动数量不记钱，重放中一律为 qty-only 事件（不动 avgCost；盘盈成本基础视为 0）
 model StockAdjustment {
   id          String   @id @default(cuid())
   partId      String
   part        Part     @relation(fields: [partId], references: [id])
-  qty         Int // + 入库 / − 退回
+  qty         Int // 寄卖：+ 入库 / − 退回；自营：+ 盘盈 / − 盘亏
   reason      String?
   adjDate     DateTime
   createdById String

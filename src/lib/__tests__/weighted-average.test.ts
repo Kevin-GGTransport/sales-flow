@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyPurchase, applySale, ZERO_STATE } from "@/lib/weighted-average";
+import { applyAdjustment, applyPurchase, applySale, ZERO_STATE } from "@/lib/weighted-average";
 import { Decimal } from "@/lib/money";
 
 const d = (v: string | number) => new Decimal(v);
@@ -65,5 +65,30 @@ describe("applySale 卖出", () => {
   it("非法输入：非正数量抛错", () => {
     expect(() => applySale(ZERO_STATE(), 0)).toThrow();
     expect(() => applySale(ZERO_STATE(), -1)).toThrow();
+  });
+});
+
+describe("applyAdjustment 库存调整（盘盈/盘亏）", () => {
+  it("盘盈：5@20 盘盈 +3 → 8 件均价仍 20（成本基础记 0，不进加权平均）", () => {
+    const next = applyAdjustment({ qty: 5, avgCost: d(20) }, 3);
+    expect(next.qty).toBe(8);
+    expect(next.avgCost.toNumber()).toBe(20);
+  });
+
+  it("盘亏：5@20 盘亏 −2 → 3 件均价仍 20", () => {
+    const next = applyAdjustment({ qty: 5, avgCost: d(20) }, -2);
+    expect(next.qty).toBe(3);
+    expect(next.avgCost.toNumber()).toBe(20);
+  });
+
+  it("盘亏穿透负数：2@10 盘亏 −5 → -3 件均价仍 10", () => {
+    const next = applyAdjustment({ qty: 2, avgCost: d(10) }, -5);
+    expect(next.qty).toBe(-3);
+    expect(next.avgCost.toNumber()).toBe(10);
+  });
+
+  it("非法输入：零 / 非整数抛错", () => {
+    expect(() => applyAdjustment(ZERO_STATE(), 0)).toThrow();
+    expect(() => applyAdjustment(ZERO_STATE(), 1.5)).toThrow();
   });
 });

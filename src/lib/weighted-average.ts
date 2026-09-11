@@ -41,3 +41,18 @@ export function applySale(state: InventoryState, outQty: number): InventoryState
   assertPositiveInt(outQty, "出库数量");
   return { qty: state.qty - outQty, avgCost: state.avgCost };
 }
+
+/**
+ * 库存调整（盘盈/盘亏）对库存的影响：只动数量，均价不变。
+ * 盘盈（+）的成本基础视为 0——不是采购，不进加权平均；
+ * 盘亏（−）只核销数量，同卖出但不产生收入/成本行。
+ */
+export function applyAdjustment(
+  state: InventoryState,
+  signedQty: number,
+): InventoryState {
+  if (!Number.isInteger(signedQty) || signedQty === 0) {
+    throw new Error("调整数量必须为非零整数");
+  }
+  return { qty: state.qty + signedQty, avgCost: state.avgCost };
+}

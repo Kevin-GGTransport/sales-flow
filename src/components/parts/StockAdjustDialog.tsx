@@ -18,19 +18,46 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-/** 寄卖入库 / 退回（仅寄卖件详情页显示） */
+/**
+ * 库存调整（配件详情页）：
+ * - 寄卖件（STAFF 可见）：寄卖入库 / 退回，只记数量不记钱
+ * - 自营件（仅 ADMIN 可见）：盘盈 / 盘亏，成本基础记 0 不改均价
+ */
 export function StockAdjustDialog({
   partId,
   partNumber,
+  isConsignment,
 }: {
   partId: string;
   partNumber: string;
+  isConsignment: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [, startTransition] = useTransition();
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+
+  const copy = isConsignment
+    ? {
+        button: "寄卖入库/退回",
+        title: `寄卖入库 / 退回（${partNumber}）`,
+        description: "只记数量不记钱。正数 = 明治的件送来了；负数 = 退回给寄卖方。",
+        qtyLabel: "数量（退回用负数，如 -3）*",
+        reasonPlaceholder: "如 新一批到货",
+        toast: (qty: number) =>
+          qty > 0 ? `已寄卖入库 ${qty} 件` : `已退回 ${-qty} 件`,
+      }
+    : {
+        button: "库存调整（盘盈/盘亏）",
+        title: `盘盈 / 盘亏（${partNumber}）`,
+        description:
+          "盘点纠偏，仅管理员。正数 = 盘盈（成本基础记 0，不改变平均成本）；负数 = 盘亏。正常进货请用买入单。",
+        qtyLabel: "数量（盘亏用负数，如 -2）*",
+        reasonPlaceholder: "如 月末盘点差异",
+        toast: (qty: number) =>
+          qty > 0 ? `已盘盈 ${qty} 件` : `已盘亏 ${-qty} 件`,
+      };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,7 +75,7 @@ export function StockAdjustDialog({
       toast.error(result.error);
       return;
     }
-    toast.success(qty > 0 ? `已寄卖入库 ${qty} 件` : `已退回 ${-qty} 件`);
+    toast.success(copy.toast(qty));
     setOpen(false);
     startTransition(() => router.refresh());
   }
@@ -58,20 +85,24 @@ export function StockAdjustDialog({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <ArrowDownUp className="size-4" />
-          寄卖入库/退回
+          {copy.button}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>寄卖入库 / 退回（{partNumber}）</DialogTitle>
-          <DialogDescription>
-            只记数量不记钱。正数 = 明治的件送来了；负数 = 退回给寄卖方。
-          </DialogDescription>
+          <DialogTitle>{copy.title}</DialogTitle>
+          <DialogDescription>{copy.description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-3">
           <div className="grid gap-2">
-            <Label htmlFor="adj-qty">数量（退回用负数，如 -3）*</Label>
-            <Input id="adj-qty" name="qty" inputMode="numeric" placeholder="如 10 或 -3" required />
+            <Label htmlFor="adj-qty">{copy.qtyLabel}</Label>
+            <Input
+              id="adj-qty"
+              name="qty"
+              inputMode="numeric"
+              placeholder={isConsignment ? "如 10 或 -3" : "如 3 或 -2"}
+              required
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="adj-date">日期</Label>
@@ -79,7 +110,7 @@ export function StockAdjustDialog({
           </div>
           <div className="grid gap-2">
             <Label htmlFor="adj-reason">备注</Label>
-            <Input id="adj-reason" name="reason" placeholder="如 新一批到货" />
+            <Input id="adj-reason" name="reason" placeholder={copy.reasonPlaceholder} />
           </div>
           <Button type="submit" disabled={pending}>
             {pending ? "保存中…" : "保存"}

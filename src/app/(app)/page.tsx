@@ -52,7 +52,9 @@ export default async function DashboardPage() {
       _sum: { amount: true },
       where: { payDate: { gte: start, lt: end } },
     }),
-    prisma.inventory.findMany({ select: { qty: true, avgCost: true } }),
+    prisma.inventory.findMany({
+      select: { qty: true, avgCost: true, part: { select: { minQty: true } } },
+    }),
     prisma.saleOrder.findMany({
       where: { status: "ACTIVE" },
       include: { payments: { select: { amount: true } } },
@@ -85,7 +87,12 @@ export default async function DashboardPage() {
   const inventoryValue = inventories
     .reduce((s, i) => s.add(i.avgCost.mul(i.qty)), zero)
     .toDecimalPlaces(2);
+  // 库存异常 = 负库存 ∪ 低库存（minQty>0 且 0≤qty≤minQty），定义互斥可直接相加
   const negativeParts = inventories.filter((i) => i.qty < 0).length;
+  const lowParts = inventories.filter(
+    (i) => i.part.minQty > 0 && i.qty >= 0 && i.qty <= i.part.minQty,
+  ).length;
+  const abnormalParts = negativeParts + lowParts;
 
   const due = (t: Decimal, ps: { amount: Decimal }[]) =>
     t.sub(ps.reduce((s, p) => s.add(p.amount), zero));
@@ -120,10 +127,10 @@ export default async function DashboardPage() {
       tone: totalPayable.greaterThan(0) ? "muted" : "muted",
     },
     {
-      label: "负库存配件",
-      value: String(negativeParts),
-      href: "/parts",
-      tone: negativeParts > 0 ? "destructive" : "muted",
+      label: "库存异常配件（负 + 低）",
+      value: String(abnormalParts),
+      href: "/inventory?filter=abnormal",
+      tone: abnormalParts > 0 ? "destructive" : "muted",
     },
     {
       label: "未开票卖出单",

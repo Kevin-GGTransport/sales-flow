@@ -135,6 +135,7 @@ export async function createPurchaseOrder(
 
     revalidatePath("/purchases");
     revalidatePath("/parts");
+    revalidatePath("/inventory");
     redirect(`/purchases/${result.id}`);
   } catch (e) {
     if (e && typeof e === "object" && "digest" in e) throw e; // Next redirect
@@ -186,6 +187,7 @@ export async function voidPurchaseOrder(
     revalidatePath("/purchases");
     revalidatePath(`/purchases/${id}`);
     revalidatePath("/parts");
+    revalidatePath("/inventory");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "作废失败" };
