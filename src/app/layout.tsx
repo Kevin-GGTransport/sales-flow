@@ -31,6 +31,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="zh-CN"
       className={`${geistSans.variable} ${geistMono.variable} ${notoSerifSC.variable} h-full antialiased`}
+      // 浏览器扩展会在注水前往 <html> 打标记（如 data-redeviation-bs-uid），
+      // 触发属性级 hydration mismatch 警告；只压制本元素，不影响子树真错误上报
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         {children}
