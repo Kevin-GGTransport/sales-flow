@@ -1,16 +1,20 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDateString } from "@/lib/validation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  ListFilterForm,
+  ShowInactiveCheckbox,
+} from "@/components/ui/list-filter-form";
+import { StatCard } from "@/components/ui/stat-card";
+import { TablePanel } from "@/components/ui/table-panel";
 import {
   CustodyItemsTable,
   CustodyFlowTable,
   type CustodyFlowRow,
   type CustodyItemRow,
 } from "@/components/custody/CustodyTables";
-import { NewCustodyItemDialog } from "@/components/custody/CustodyDialogs";
+import { NewCustodyItemDialog } from "@/components/custody/dialogs/NewCustodyItemDialog";
 
 const FLOW_PAGE_SIZE = 50;
 
@@ -36,20 +40,11 @@ export default async function CustodyPage({
     ...(ownerFilter ? { ownerName: ownerFilter } : {}),
   };
 
-  const items = await prisma.custodyItem.findMany({
-    where,
-    orderBy: [{ ownerName: "asc" }, { partNumber: "asc" }],
-  });
-
-  const [movements, ownerCounts] = await Promise.all([
-    items.length
-      ? prisma.custodyMovement.findMany({
-          where: { custodyItemId: { in: items.map((i) => i.id) } },
-          include: { createdBy: { select: { name: true } } },
-          orderBy: [{ moveDate: "desc" }, { createdAt: "desc" }],
-          take: FLOW_PAGE_SIZE,
-        })
-      : Promise.resolve([]),
+  const [items, ownerCounts] = await Promise.all([
+    prisma.custodyItem.findMany({
+      where,
+      orderBy: [{ ownerName: "asc" }, { partNumber: "asc" }],
+    }),
     prisma.custodyItem.groupBy({
       by: ["ownerName"],
       where: { isActive: true },
@@ -57,6 +52,15 @@ export default async function CustodyPage({
       _count: { _all: true },
     }),
   ]);
+
+  const movements = items.length
+    ? await prisma.custodyMovement.findMany({
+        where: { custodyItemId: { in: items.map((i) => i.id) } },
+        include: { createdBy: { select: { name: true } } },
+        orderBy: [{ moveDate: "desc" }, { createdAt: "desc" }],
+        take: FLOW_PAGE_SIZE,
+      })
+    : [];
 
   // 汇总基于未筛选的在管全集
   const activeTotal = ownerCounts.reduce((s, o) => s + (o._sum.qty ?? 0), 0);
@@ -116,36 +120,14 @@ export default async function CustodyPage({
 
       <div className="grid gap-4 sm:grid-cols-3">
         {summary.map((s) => (
-          <Card key={s.label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">
-                {s.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-mono text-xl font-semibold tracking-tight">{s.value}</p>
-            </CardContent>
-          </Card>
+          <StatCard key={s.label} label={s.label} value={s.value} />
         ))}
       </div>
 
-      <form className="flex flex-wrap items-center gap-2">
-        {ownerFilter && <input type="hidden" name="owner" value={ownerFilter} />}
+      <ListFilterForm hidden={{ owner: ownerFilter }} submitLabel="搜索">
         <Input name="q" defaultValue={keyword} placeholder="搜索货主 / 配件号 / 名称" className="w-72" />
-        <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            name="showInactive"
-            value="1"
-            defaultChecked={showInactive}
-            className="size-4 accent-(--color-primary)"
-          />
-          显示已停用
-        </label>
-        <Button type="submit" variant="secondary">
-          搜索
-        </Button>
-      </form>
+        <ShowInactiveCheckbox defaultChecked={showInactive} />
+      </ListFilterForm>
 
       {ownerCounts.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -188,12 +170,11 @@ export default async function CustodyPage({
       </div>
 
       {items.length > 0 && (
-        <div className="rounded-lg border">
-          <div className="border-b p-3 text-sm font-medium">
-            出入流水（当前列表{movements.length === FLOW_PAGE_SIZE ? ` · 仅显示最近 ${FLOW_PAGE_SIZE} 条` : ""}）
-          </div>
+        <TablePanel
+          title={`出入流水（当前列表${movements.length === FLOW_PAGE_SIZE ? ` · 仅显示最近 ${FLOW_PAGE_SIZE} 条` : ""}）`}
+        >
           <CustodyFlowTable rows={flowRows} />
-        </div>
+        </TablePanel>
       )}
     </div>
   );

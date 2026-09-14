@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import { cn } from "cn"
 
@@ -104,6 +102,24 @@ function TableCaption({
   )
 }
 
+/** 手写表格的空状态行（DataTable 有内建空态，这里服务详情页/报表等静态表格） */
+function EmptyRow({
+  colSpan,
+  className,
+  children,
+}: React.ComponentProps<"td"> & { colSpan: number }) {
+  return (
+    <TableRow>
+      <TableCell
+        colSpan={colSpan}
+        className={cn("h-16 text-center text-muted-foreground", className)}
+      >
+        {children}
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export {
   Table,
   TableHeader,
@@ -113,4 +129,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  EmptyRow,
 }

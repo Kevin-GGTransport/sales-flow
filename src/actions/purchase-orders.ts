@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/guard";
 import { Decimal, lineTotalOf } from "@/lib/money";
 import {

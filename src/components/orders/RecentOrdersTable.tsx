@@ -19,8 +19,8 @@ export type RecentOrderRow = {
   createdBy: string;
 };
 
-export function RecentOrdersTable({ rows }: { rows: RecentOrderRow[] }) {
-  const columns: DataTableColumn<RecentOrderRow>[] = [
+// 列定义不闭包任何 props，提升到模块级保持引用稳定（DataTable 的 useMemo 依赖它）
+const columns: DataTableColumn<RecentOrderRow>[] = [
     {
       key: "kind",
       header: "类型",
@@ -63,8 +63,9 @@ export function RecentOrdersTable({ rows }: { rows: RecentOrderRow[] }) {
       ),
     },
     { key: "by", header: "录单人", sortValue: (r) => r.createdBy, cell: (r) => r.createdBy },
-  ];
+];
 
+export function RecentOrdersTable({ rows }: { rows: RecentOrderRow[] }) {
   return (
     <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} empty="还没有单据" />
   );

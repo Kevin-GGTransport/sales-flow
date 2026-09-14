@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { auth, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { formatDateString } from "@/lib/validation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
+import { StatCard } from "@/components/ui/stat-card";
+import { TablePanel } from "@/components/ui/table-panel";
 import {
   Table,
   TableBody,
@@ -13,6 +16,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  EmptyRow,
 } from "@/components/ui/table";
 import { EditPartDialog } from "@/components/parts/EditPartDialog";
 import { StockAdjustDialog } from "@/components/parts/StockAdjustDialog";
@@ -33,24 +37,26 @@ export default async function PartDetailPage({
   params,
 }: PageProps<"/parts/[id]">) {
   const { id } = await params;
-  const part = await prisma.part.findUnique({
-    where: { id },
-    include: {
-      inventory: true,
-      purchaseLines: {
-        include: { order: { select: { orderNo: true, orderDate: true, status: true } } },
+  const [part, session] = await Promise.all([
+    prisma.part.findUnique({
+      where: { id },
+      include: {
+        inventory: true,
+        purchaseLines: {
+          include: { order: { select: { orderNo: true, orderDate: true, status: true } } },
+        },
+        saleLines: {
+          include: { order: { select: { orderNo: true, orderDate: true, status: true } } },
+        },
+        adjustments: true,
       },
-      saleLines: {
-        include: { order: { select: { orderNo: true, orderDate: true, status: true } } },
-      },
-      adjustments: true,
-    },
-  });
+    }),
+    auth(),
+  ]);
   if (!part) notFound();
 
   // 页面层只控制按钮显隐（UX），真正的权限在 action 层强制
-  const session = await auth();
-  const isAdmin = session?.user?.role === "ADMIN";
+  const isAdminFlag = isAdmin(session);
 
   const qty = part.inventory?.qty ?? 0;
   const avg = part.inventory?.avgCost ?? null;
@@ -101,15 +107,11 @@ export default async function PartDetailPage({
             ← 配件
           </Link>
           <h1 className="text-2xl font-semibold tracking-tight">{part.partNumber}</h1>
-          {part.isConsignment ? (
-            <Badge variant="outline">寄卖</Badge>
-          ) : (
-            <Badge variant="secondary">自营</Badge>
-          )}
+          <ConsignmentBadge isConsignment={part.isConsignment} />
           {!part.isActive && <Badge variant="destructive">已停用</Badge>}
         </div>
         <div className="flex gap-2">
-          {(part.isConsignment || isAdmin) && (
+          {(part.isConsignment || isAdminFlag) && (
             <StockAdjustDialog
               partId={part.id}
               partNumber={part.partNumber}
@@ -131,41 +133,34 @@ export default async function PartDetailPage({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">库存数量</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className={qty < 0 ? "text-2xl font-semibold text-destructive" : "text-2xl font-semibold"}>
-              {qty}
+        <StatCard
+          label="库存数量"
+          value={qty}
+          size="lg"
+          labelSize="sm"
+          mono={false}
+          tone={qty < 0 ? "destructive" : "default"}
+        >
+          {lowStock && (
+            <p className="mt-1 text-xs text-destructive">
+              {qty === 0 ? "已无库存" : "低于安全库存"}（阈值 {part.minQty}）
             </p>
-            {lowStock && (
-              <p className="mt-1 text-xs text-destructive">
-                {qty === 0 ? "已无库存" : "低于安全库存"}（阈值 {part.minQty}）
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">平均成本</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold">
-              {part.isConsignment ? "-" : formatUSD(avg)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">库存价值</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold">
-              {part.isConsignment ? "-" : formatUSD(avg ? avg.mul(qty) : null)}
-            </p>
-          </CardContent>
-        </Card>
+          )}
+        </StatCard>
+        <StatCard
+          label="平均成本"
+          value={part.isConsignment ? "-" : formatUSD(avg)}
+          size="lg"
+          labelSize="sm"
+          mono={false}
+        />
+        <StatCard
+          label="库存价值"
+          value={part.isConsignment ? "-" : formatUSD(avg ? avg.mul(qty) : null)}
+          size="lg"
+          labelSize="sm"
+          mono={false}
+        />
       </div>
 
       <Card>
@@ -180,8 +175,7 @@ export default async function PartDetailPage({
         </CardContent>
       </Card>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">出入历史（新→旧）</div>
+      <TablePanel title="出入历史（新→旧）">
         <Table>
           <TableHeader>
             <TableRow>
@@ -194,11 +188,7 @@ export default async function PartDetailPage({
           </TableHeader>
           <TableBody>
             {history.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-16 text-center text-muted-foreground">
-                  还没有出入记录
-                </TableCell>
-              </TableRow>
+              <EmptyRow colSpan={5}>还没有出入记录</EmptyRow>
             ) : (
               history.map((row) => (
                 <TableRow key={row.key} className={row.voided ? "opacity-50" : ""}>
@@ -220,7 +210,7 @@ export default async function PartDetailPage({
             )}
           </TableBody>
         </Table>
-      </div>
+      </TablePanel>
     </div>
   );
 }

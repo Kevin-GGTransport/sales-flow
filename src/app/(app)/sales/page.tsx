@@ -5,6 +5,10 @@ import { formatDateString } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  ListFilterForm,
+  StatusSelect,
+} from "@/components/ui/list-filter-form";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -70,23 +74,14 @@ export default async function SalesPage({
         </Button>
       </div>
 
-      <form className="flex flex-wrap items-center gap-2">
+      <ListFilterForm>
         <Input
           name="q"
           defaultValue={keyword}
           placeholder="搜索单号 / 客户 / 发票号"
           className="w-64"
         />
-        <Select name="status" defaultValue={status ?? "ALL"}>
-          <SelectTrigger className="w-28">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ACTIVE">有效</SelectItem>
-            <SelectItem value="VOID">已作废</SelectItem>
-            <SelectItem value="ALL">全部</SelectItem>
-          </SelectContent>
-        </Select>
+        <StatusSelect defaultValue={status ?? "ALL"} />
         <Select name="invoice" defaultValue={invoiceParam}>
           <SelectTrigger className="w-28">
             <SelectValue />
@@ -97,10 +92,7 @@ export default async function SalesPage({
             <SelectItem value="INVOICED">已开票</SelectItem>
           </SelectContent>
         </Select>
-        <Button type="submit" variant="secondary">
-          筛选
-        </Button>
-      </form>
+      </ListFilterForm>
 
       <div className="rounded-lg border">
         <SalesTable rows={rows} />

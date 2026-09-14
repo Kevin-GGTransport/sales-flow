@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { createPurchaseOrder } from "@/actions/purchase-orders";
+import { todayISO } from "@/lib/format";
 import type { ActionResult } from "@/actions/parts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,7 @@ export function PurchaseOrderForm({
   parts: PartOption[];
   copyFrom?: CopyFromData;
 }) {
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = todayISO();
   const [rows, setRows] = useState<OrderLine[]>(() =>
     copyFrom?.lines.length
       ? copyFrom.lines.map((l) => ({
@@ -56,10 +57,15 @@ export function PurchaseOrderForm({
     if (state && !state.ok) toast.error(state.error);
   }, [state]);
 
-  const linesJson = JSON.stringify(
-    rows
-      .filter((r) => r.partId && Number(r.qty) > 0)
-      .map((r) => ({ partId: r.partId, qty: Number(r.qty), unitPrice: r.unitPrice })),
+  // 只有行数据变化才重算序列化（键入供应商名等字段不再触发）
+  const linesJson = useMemo(
+    () =>
+      JSON.stringify(
+        rows
+          .filter((r) => r.partId && Number(r.qty) > 0)
+          .map((r) => ({ partId: r.partId, qty: Number(r.qty), unitPrice: r.unitPrice })),
+      ),
+    [rows],
   );
 
   return (

@@ -1,7 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { Decimal, formatUSD } from "@/lib/money";
+import { formatUSD } from "@/lib/money";
 import { formatDateString, PAYMENT_METHOD_LABEL } from "@/lib/validation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  outstandingDueTotals,
+  outstandingOrders,
+  type OutstandingOrder,
+} from "@/lib/reports";
+import { StatCard } from "@/components/ui/stat-card";
+import { TablePanel } from "@/components/ui/table-panel";
 import {
   PayablesTable,
   PaymentFlowTable,
@@ -11,19 +17,10 @@ import {
 } from "@/components/payments/PaymentsTables";
 
 export default async function PaymentsPage() {
-  const [sales, purchases, recentPayments] = await Promise.all([
-    prisma.saleOrder.findMany({
-      where: { status: "ACTIVE" },
-      include: { payments: { select: { amount: true } } },
-      orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
-      take: 200,
-    }),
-    prisma.purchaseOrder.findMany({
-      where: { status: "ACTIVE" },
-      include: { payments: { select: { amount: true } } },
-      orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
-      take: 200,
-    }),
+  const [totals, sales, purchases, recentPayments] = await Promise.all([
+    outstandingDueTotals(),
+    outstandingOrders("sale"),
+    outstandingOrders("purchase"),
     prisma.payment.findMany({
       include: {
         createdBy: { select: { name: true } },
@@ -35,40 +32,23 @@ export default async function PaymentsPage() {
     }),
   ]);
 
-  const toRows = (
-    orders: {
-      id: string;
-      orderNo: string;
-      orderDate: Date;
-      totalAmount: Decimal;
-      payments: { amount: Decimal }[];
-      partyName: string;
-    }[],
-  ): OutstandingRow[] =>
-    orders
-      .map((o) => {
-        const total = o.totalAmount.toNumber();
-        const due = total - o.payments.reduce((s, p) => s + p.amount.toNumber(), 0);
-        return {
-          orderId: o.id,
-          orderNo: o.orderNo,
-          orderDate: formatDateString(o.orderDate),
-          partyName: o.partyName,
-          totalText: formatUSD(o.totalAmount),
-          total,
-          paidText: formatUSD(o.totalAmount.minus(due)),
-          paid: total - due,
-          dueText: formatUSD(due),
-          due,
-        };
-      })
-      .filter((r) => r.due > 0.004);
+  // Decimal 只留在服务端：客户端组件拿显示字符串 + 排序数值双字段
+  const toRows = (orders: OutstandingOrder[]): OutstandingRow[] =>
+    orders.map((o) => ({
+      orderId: o.orderId,
+      orderNo: o.orderNo,
+      orderDate: o.orderDate,
+      partyName: o.partyName,
+      totalText: formatUSD(o.total),
+      total: o.total.toNumber(),
+      paidText: formatUSD(o.paid),
+      paid: o.paid.toNumber(),
+      dueText: formatUSD(o.due),
+      due: o.due.toNumber(),
+    }));
 
-  const receivables = toRows(sales.map((o) => ({ ...o, partyName: o.customerName })));
-  const payables = toRows(purchases.map((o) => ({ ...o, partyName: o.supplierName })));
-
-  const totalReceivable = receivables.reduce((s, r) => s + r.due, 0);
-  const totalPayable = payables.reduce((s, r) => s + r.due, 0);
+  const receivables = toRows(sales);
+  const payables = toRows(purchases);
 
   const flowRows: PaymentFlowRow[] = recentPayments.map((p) => ({
     id: p.id,
@@ -87,46 +67,32 @@ export default async function PaymentsPage() {
       <h1 className="text-2xl font-semibold tracking-tight">销账</h1>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              应收欠款总额（客户欠我们）
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-2xl font-semibold tracking-tight text-destructive">
-              {formatUSD(totalReceivable)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              应付欠款总额（我们欠供应商）
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-2xl font-semibold tracking-tight">
-              {formatUSD(totalPayable)}
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="应收欠款总额（客户欠我们）"
+          value={formatUSD(totals.receivable)}
+          size="lg"
+          labelSize="sm"
+          tone="destructive"
+        />
+        <StatCard
+          label="应付欠款总额（我们欠供应商）"
+          value={formatUSD(totals.payable)}
+          size="lg"
+          labelSize="sm"
+        />
       </div>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">应收 · 未结清卖出单</div>
+      <TablePanel title="应收 · 未结清卖出单">
         <ReceivablesTable rows={receivables} />
-      </div>
+      </TablePanel>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">应付 · 未结清买入单</div>
+      <TablePanel title="应付 · 未结清买入单">
         <PayablesTable rows={payables} />
-      </div>
+      </TablePanel>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">近期收付款流水</div>
+      <TablePanel title="近期收付款流水">
         <PaymentFlowTable rows={flowRows} />
-      </div>
+      </TablePanel>
     </div>
   );
 }

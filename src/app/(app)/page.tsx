@@ -1,10 +1,15 @@
-import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { Decimal } from "@/lib/money";
 import { formatDateString } from "@/lib/validation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  inventoryAbnormalCounts,
+  inventoryValueTotal,
+  outstandingDueTotals,
+} from "@/lib/reports";
+import { StatCard } from "@/components/ui/stat-card";
+import { TablePanel } from "@/components/ui/table-panel";
 import { RecentOrdersTable, type RecentOrderRow } from "@/components/orders/RecentOrdersTable";
 
 function monthRangeUtc(): { start: Date; end: Date } {
@@ -16,20 +21,21 @@ function monthRangeUtc(): { start: Date; end: Date } {
 }
 
 export default async function DashboardPage() {
-  const session = await auth();
   const { start, end } = monthRangeUtc();
 
   const [
+    session,
     monthPurchases,
     monthSales,
     monthPayments,
-    inventories,
-    unsettledSales,
-    unsettledPurchases,
+    inventoryValue,
+    abnormal,
+    dues,
     uninvoicedCount,
     recentPurchases,
     recentSales,
   ] = await Promise.all([
+    auth(),
     prisma.purchaseOrder.aggregate({
       _sum: { totalAmount: true },
       where: { status: "ACTIVE", orderDate: { gte: start, lt: end } },
@@ -43,17 +49,10 @@ export default async function DashboardPage() {
       _sum: { amount: true },
       where: { payDate: { gte: start, lt: end } },
     }),
-    prisma.inventory.findMany({
-      select: { qty: true, avgCost: true, part: { select: { minQty: true } } },
-    }),
-    prisma.saleOrder.findMany({
-      where: { status: "ACTIVE" },
-      include: { payments: { select: { amount: true } } },
-    }),
-    prisma.purchaseOrder.findMany({
-      where: { status: "ACTIVE" },
-      include: { payments: { select: { amount: true } } },
-    }),
+    // SQL 聚合（不再全表拉单据/库存进 JS reduce，见 lib/reports.ts）
+    inventoryValueTotal(),
+    inventoryAbnormalCounts(),
+    outstandingDueTotals(),
     prisma.saleOrder.count({ where: { status: "ACTIVE", invoiceNo: null } }),
     prisma.purchaseOrder.findMany({
       include: { createdBy: { select: { name: true } } },
@@ -75,26 +74,11 @@ export default async function DashboardPage() {
     .filter((p) => p.purchaseOrderId)
     .reduce((s, p) => s.add(p._sum.amount ?? zero), zero);
 
-  const inventoryValue = inventories
-    .reduce((s, i) => s.add(i.avgCost.mul(i.qty)), zero)
-    .toDecimalPlaces(2);
   // 库存异常 = 负库存 ∪ 低库存（minQty>0 且 0≤qty≤minQty），定义互斥可直接相加
-  const negativeParts = inventories.filter((i) => i.qty < 0).length;
-  const lowParts = inventories.filter(
-    (i) => i.part.minQty > 0 && i.qty >= 0 && i.qty <= i.part.minQty,
-  ).length;
+  const { negative: negativeParts, low: lowParts } = abnormal;
   const abnormalParts = negativeParts + lowParts;
 
-  const due = (t: Decimal, ps: { amount: Decimal }[]) =>
-    t.sub(ps.reduce((s, p) => s.add(p.amount), zero));
-  const totalReceivable = unsettledSales
-    .map((o) => due(o.totalAmount, o.payments))
-    .filter((d) => d.greaterThan(0.004))
-    .reduce((s, d) => s.add(d), zero);
-  const totalPayable = unsettledPurchases
-    .map((o) => due(o.totalAmount, o.payments))
-    .filter((d) => d.greaterThan(0.004))
-    .reduce((s, d) => s.add(d), zero);
+  const { receivable: totalReceivable, payable: totalPayable } = dues;
 
   const cards = [
     { label: "本月卖出（单据）", value: formatUSD(monthSales._sum.totalAmount), href: "/sales" },
@@ -170,52 +154,26 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c) => (
-          <Link key={c.label} href={c.href} className="group">
-            <Card className="transition-shadow group-hover:shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium text-muted-foreground">
-                  {c.label}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-mono text-xl font-semibold tracking-tight">
-                  {c.value}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
+          <StatCard key={c.label} label={c.label} value={c.value} href={c.href} />
         ))}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {alerts.map((a) => (
-          <Link key={a.label} href={a.href} className="group">
-            <Card className="transition-shadow group-hover:shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium text-muted-foreground">
-                  {a.label}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <span
-                  className={
-                    a.tone === "destructive"
-                      ? "font-mono text-lg font-semibold tracking-tight text-destructive"
-                      : "font-mono text-lg font-semibold tracking-tight"
-                  }
-                >
-                  {a.value}
-                </span>
-              </CardContent>
-            </Card>
-          </Link>
+          <StatCard
+            key={a.label}
+            label={a.label}
+            value={a.value}
+            href={a.href}
+            size="sm"
+            tone={a.tone === "destructive" ? "destructive" : "default"}
+          />
         ))}
       </div>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">最近单据</div>
+      <TablePanel title="最近单据">
         <RecentOrdersTable rows={recentRows} />
-      </div>
+      </TablePanel>
     </div>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowDownUp } from "lucide-react";
 import { addStockAdjustment } from "@/actions/stock-adjustments";
+import { todayISO } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,7 +37,7 @@ export function StockAdjustDialog({
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [, startTransition] = useTransition();
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = todayISO();
 
   const copy = isConsignment
     ? {

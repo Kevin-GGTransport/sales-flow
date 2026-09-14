@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Copy } from "lucide-react";
-import { auth } from "@/lib/auth";
+import { auth, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Decimal, formatUSD } from "@/lib/money";
 import { formatDateString } from "@/lib/validation";
@@ -41,7 +41,7 @@ export default async function SaleDetailPage({
   ]);
   if (!order) notFound();
 
-  const isAdmin = session?.user?.role === "ADMIN";
+  const isAdminFlag = isAdmin(session);
   const grossProfit = order.lines
     .filter((l) => !l.isConsignment)
     .reduce((sum, l) => sum.add(l.lineTotal.sub(l.costTotal)), new Decimal(0));
@@ -66,7 +66,7 @@ export default async function SaleDetailPage({
               </Link>
             </Button>
           )}
-          {isAdmin && order.status === "ACTIVE" && (
+          {isAdminFlag && order.status === "ACTIVE" && (
             <VoidOrderDialog
               kind="sale"
               orderId={order.id}
@@ -187,7 +187,7 @@ export default async function SaleDetailPage({
             note: p.note,
             by: p.createdBy.name,
           }))}
-          isAdmin={isAdmin}
+          isAdmin={isAdminFlag}
         />
       )}
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
 import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
 
 export type InventoryRow = {
@@ -18,14 +19,8 @@ export type InventoryRow = {
   status: "normal" | "low" | "negative";
 };
 
-export function InventoryTable({
-  rows,
-  empty,
-}: {
-  rows: InventoryRow[];
-  empty?: React.ReactNode;
-}) {
-  const columns: DataTableColumn<InventoryRow>[] = [
+// 列定义不闭包任何 props，提升到模块级保持引用稳定（DataTable 的 useMemo 依赖它）
+const columns: DataTableColumn<InventoryRow>[] = [
     {
       key: "partNumber",
       header: "配件号",
@@ -45,12 +40,7 @@ export function InventoryTable({
       header: "类型",
       card: "badge",
       sortValue: (r) => (r.isConsignment ? "寄卖" : "自营"),
-      cell: (r) =>
-        r.isConsignment ? (
-          <Badge variant="outline">寄卖</Badge>
-        ) : (
-          <Badge variant="secondary">自营</Badge>
-        ),
+      cell: (r) => <ConsignmentBadge isConsignment={r.isConsignment} />,
     },
     {
       key: "qty",
@@ -101,8 +91,15 @@ export function InventoryTable({
           <span className="text-muted-foreground">-</span>
         ),
     },
-  ];
+];
 
+export function InventoryTable({
+  rows,
+  empty,
+}: {
+  rows: InventoryRow[];
+  empty?: React.ReactNode;
+}) {
   return (
     <DataTable
       columns={columns}

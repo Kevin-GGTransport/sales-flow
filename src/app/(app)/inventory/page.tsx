@@ -2,8 +2,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Decimal, formatUSD } from "@/lib/money";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ListFilterForm } from "@/components/ui/list-filter-form";
+import { StatCard } from "@/components/ui/stat-card";
 import { InventoryTable, type InventoryRow } from "@/components/inventory/InventoryTable";
 
 /**
@@ -127,24 +128,12 @@ export default async function InventoryPage({
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {summary.map((s) => (
-          <Card key={s.label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">
-                {s.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p
-                className={
-                  s.danger
-                    ? "font-mono text-xl font-semibold tracking-tight text-destructive"
-                    : "font-mono text-xl font-semibold tracking-tight"
-                }
-              >
-                {s.value}
-              </p>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={s.label}
+            label={s.label}
+            value={s.value}
+            tone={s.danger ? "destructive" : "default"}
+          />
         ))}
       </div>
 
@@ -164,13 +153,9 @@ export default async function InventoryPage({
         ))}
       </div>
 
-      <form className="flex flex-wrap items-center gap-2">
-        <input type="hidden" name="filter" value={filter} />
+      <ListFilterForm hidden={{ filter }} submitLabel="搜索">
         <Input name="q" defaultValue={keyword} placeholder="搜索配件号 / 名称 / 品牌" className="w-72" />
-        <Button type="submit" variant="secondary">
-          搜索
-        </Button>
-      </form>
+      </ListFilterForm>
 
       <div className="rounded-lg border">
         <InventoryTable

@@ -67,6 +67,13 @@ declare module "next-auth" {
   }
 }
 
+/** 页面层按钮显隐判定（真正的权限仍在 action 层 requireAdmin 强制） */
+export function isAdmin(
+  session: { user?: { role?: string | null } } | null,
+): boolean {
+  return session?.user?.role === "ADMIN";
+}
+
 declare module "next-auth/jwt" {
   interface JWT {
     id?: string;

@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  ListFilterForm,
+  ShowInactiveCheckbox,
+} from "@/components/ui/list-filter-form";
 import { PartsTable, type PartRow } from "@/components/parts/PartsTable";
 
 export default async function PartsPage({
@@ -57,22 +61,10 @@ export default async function PartsPage({
         </Button>
       </div>
 
-      <form className="flex flex-wrap items-center gap-2">
+      <ListFilterForm submitLabel="搜索">
         <Input name="q" defaultValue={keyword} placeholder="搜索配件号 / 名称 / 品牌" className="w-72" />
-        <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            name="showInactive"
-            value="1"
-            defaultChecked={includeInactive}
-            className="size-4 accent-(--color-primary)"
-          />
-          显示已停用
-        </label>
-        <Button type="submit" variant="secondary">
-          搜索
-        </Button>
-      </form>
+        <ShowInactiveCheckbox defaultChecked={includeInactive} />
+      </ListFilterForm>
 
       <div className="rounded-lg border">
         <PartsTable

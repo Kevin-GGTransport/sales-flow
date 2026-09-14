@@ -18,8 +18,8 @@ export type SaleRow = {
   createdBy: string;
 };
 
-export function SalesTable({ rows }: { rows: SaleRow[] }) {
-  const columns: DataTableColumn<SaleRow>[] = [
+// 列定义不闭包任何 props，提升到模块级保持引用稳定（DataTable 的 useMemo 依赖它）
+const columns: DataTableColumn<SaleRow>[] = [
     {
       key: "orderNo",
       header: "单号",
@@ -60,8 +60,9 @@ export function SalesTable({ rows }: { rows: SaleRow[] }) {
     },
     { key: "status", header: "状态", card: "badge", cell: (r) => <OrderStatusBadge status={r.status} /> },
     { key: "by", header: "录单人", sortValue: (r) => r.createdBy, cell: (r) => r.createdBy },
-  ];
+];
 
+export function SalesTable({ rows }: { rows: SaleRow[] }) {
   return (
     <DataTable
       columns={columns}

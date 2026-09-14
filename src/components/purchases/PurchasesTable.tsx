@@ -16,8 +16,8 @@ export type PurchaseRow = {
   createdBy: string;
 };
 
-export function PurchasesTable({ rows }: { rows: PurchaseRow[] }) {
-  const columns: DataTableColumn<PurchaseRow>[] = [
+// 列定义不闭包任何 props，提升到模块级保持引用稳定（DataTable 的 useMemo 依赖它）
+const columns: DataTableColumn<PurchaseRow>[] = [
     {
       key: "orderNo",
       header: "单号",
@@ -44,8 +44,9 @@ export function PurchasesTable({ rows }: { rows: PurchaseRow[] }) {
     },
     { key: "status", header: "状态", card: "badge", cell: (r) => <OrderStatusBadge status={r.status} /> },
     { key: "by", header: "录单人", sortValue: (r) => r.createdBy, cell: (r) => r.createdBy },
-  ];
+];
 
+export function PurchasesTable({ rows }: { rows: PurchaseRow[] }) {
   return (
     <DataTable
       columns={columns}

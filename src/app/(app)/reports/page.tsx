@@ -8,9 +8,10 @@ import {
   profitByMonth,
   profitByPart,
 } from "@/lib/reports";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
+import { TablePanel } from "@/components/ui/table-panel";
 import {
   Table,
   TableBody,
@@ -18,6 +19,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  EmptyRow,
 } from "@/components/ui/table";
 
 export default async function ReportsPage({
@@ -51,10 +53,13 @@ export default async function ReportsPage({
         </div>
       </div>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">
-          库存报表 · 自营总价值 <span className="text-primary">{formatUSD(inventory.ownedTotalValue)}</span>
-        </div>
+      <TablePanel
+        title={
+          <>
+            库存报表 · 自营总价值 <span className="text-primary">{formatUSD(inventory.ownedTotalValue)}</span>
+          </>
+        }
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -67,11 +72,7 @@ export default async function ReportsPage({
           </TableHeader>
           <TableBody>
             {inventory.owned.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-16 text-center text-muted-foreground">
-                  没有自营配件
-                </TableCell>
-              </TableRow>
+              <EmptyRow colSpan={5}>没有自营配件</EmptyRow>
             ) : (
               inventory.owned.map((r) => (
                 <TableRow key={r.partId}>
@@ -95,12 +96,9 @@ export default async function ReportsPage({
             </TableRow>
           </TableBody>
         </Table>
-      </div>
+      </TablePanel>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">
-          寄卖库存（明治等 · 只有数量，无成本价值）
-        </div>
+      <TablePanel title="寄卖库存（明治等 · 只有数量，无成本价值）">
         <Table>
           <TableHeader>
             <TableRow>
@@ -112,11 +110,7 @@ export default async function ReportsPage({
           </TableHeader>
           <TableBody>
             {inventory.consignment.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-16 text-center text-muted-foreground">
-                  没有寄卖配件
-                </TableCell>
-              </TableRow>
+              <EmptyRow colSpan={4}>没有寄卖配件</EmptyRow>
             ) : (
               inventory.consignment.map((r) => (
                 <TableRow key={r.partId}>
@@ -126,20 +120,17 @@ export default async function ReportsPage({
                     </Link>
                   </TableCell>
                   <TableCell>{r.name}</TableCell>
-                  <TableCell><Badge variant="outline">寄卖</Badge></TableCell>
+                  <TableCell><ConsignmentBadge isConsignment /></TableCell>
                   <TableCell className="text-right">{r.qty}</TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
-      </div>
+      </TablePanel>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border">
-          <div className="border-b p-3 text-sm font-medium">
-            月度单据口径（按单据日期 {year}）
-          </div>
+        <TablePanel title={`月度单据口径（按单据日期 ${year}）`}>
           <Table>
             <TableHeader>
               <TableRow>
@@ -152,11 +143,7 @@ export default async function ReportsPage({
             </TableHeader>
             <TableBody>
               {monthly.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-16 text-center text-muted-foreground">
-                    {year} 年没有单据
-                  </TableCell>
-                </TableRow>
+                <EmptyRow colSpan={5}>{year} 年没有单据</EmptyRow>
               ) : (
                 monthly.map((r) => (
                   <TableRow key={r.month}>
@@ -172,12 +159,9 @@ export default async function ReportsPage({
               )}
             </TableBody>
           </Table>
-        </div>
+        </TablePanel>
 
-        <div className="rounded-lg border">
-          <div className="border-b p-3 text-sm font-medium">
-            月度现金口径（按收/付日期 {year}）
-          </div>
+        <TablePanel title={`月度现金口径（按收/付日期 ${year}）`}>
           <Table>
             <TableHeader>
               <TableRow>
@@ -189,11 +173,7 @@ export default async function ReportsPage({
             </TableHeader>
             <TableBody>
               {cash.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-16 text-center text-muted-foreground">
-                    {year} 年没有收付款
-                  </TableCell>
-                </TableRow>
+                <EmptyRow colSpan={4}>{year} 年没有收付款</EmptyRow>
               ) : (
                 cash.map((r) => (
                   <TableRow key={r.month}>
@@ -206,11 +186,10 @@ export default async function ReportsPage({
               )}
             </TableBody>
           </Table>
-        </div>
+        </TablePanel>
       </div>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">利润统计 · 按月（仅自营件，{year}）</div>
+      <TablePanel title={`利润统计 · 按月（仅自营件，${year}）`}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -222,11 +201,7 @@ export default async function ReportsPage({
           </TableHeader>
           <TableBody>
             {profitMonths.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-16 text-center text-muted-foreground">
-                  {year} 年没有自营卖出
-                </TableCell>
-              </TableRow>
+              <EmptyRow colSpan={4}>{year} 年没有自营卖出</EmptyRow>
             ) : (
               profitMonths.map((r) => (
                 <TableRow key={r.month}>
@@ -241,10 +216,9 @@ export default async function ReportsPage({
             )}
           </TableBody>
         </Table>
-      </div>
+      </TablePanel>
 
-      <div className="rounded-lg border">
-        <div className="border-b p-3 text-sm font-medium">利润统计 · 按配件（仅自营件，{year}）</div>
+      <TablePanel title={`利润统计 · 按配件（仅自营件，${year}）`}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -258,11 +232,7 @@ export default async function ReportsPage({
           </TableHeader>
           <TableBody>
             {profitParts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-16 text-center text-muted-foreground">
-                  {year} 年没有自营卖出
-                </TableCell>
-              </TableRow>
+              <EmptyRow colSpan={6}>{year} 年没有自营卖出</EmptyRow>
             ) : (
               profitParts.map((r) => (
                 <TableRow key={r.partId}>
@@ -283,7 +253,7 @@ export default async function ReportsPage({
             )}
           </TableBody>
         </Table>
-      </div>
+      </TablePanel>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>

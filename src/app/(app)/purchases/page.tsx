@@ -5,12 +5,9 @@ import { formatDateString } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  ListFilterForm,
+  StatusSelect,
+} from "@/components/ui/list-filter-form";
 import { PurchasesTable, type PurchaseRow } from "@/components/purchases/PurchasesTable";
 
 export default async function PurchasesPage({
@@ -62,27 +59,15 @@ export default async function PurchasesPage({
         </Button>
       </div>
 
-      <form className="flex flex-wrap items-center gap-2">
+      <ListFilterForm>
         <Input
           name="q"
           defaultValue={keyword}
           placeholder="搜索单号 / 供应商"
           className="w-64"
         />
-        <Select name="status" defaultValue={status ?? "ALL"}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ACTIVE">有效</SelectItem>
-            <SelectItem value="VOID">已作废</SelectItem>
-            <SelectItem value="ALL">全部</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button type="submit" variant="secondary">
-          筛选
-        </Button>
-      </form>
+        <StatusSelect defaultValue={status ?? "ALL"} className="w-32" />
+      </ListFilterForm>
 
       <div className="rounded-lg border">
         <PurchasesTable rows={rows} />

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Copy } from "lucide-react";
-import { auth } from "@/lib/auth";
+import { auth, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { formatDateString } from "@/lib/validation";
@@ -41,7 +41,7 @@ export default async function PurchaseDetailPage({
   ]);
   if (!order) notFound();
 
-  const isAdmin = session?.user?.role === "ADMIN";
+  const isAdminFlag = isAdmin(session);
 
   return (
     <div className="space-y-4">
@@ -62,7 +62,7 @@ export default async function PurchaseDetailPage({
               </Link>
             </Button>
           )}
-          {isAdmin && order.status === "ACTIVE" && (
+          {isAdminFlag && order.status === "ACTIVE" && (
             <VoidOrderDialog kind="purchase" orderId={order.id} />
           )}
         </div>
@@ -144,7 +144,7 @@ export default async function PurchaseDetailPage({
             note: p.note,
             by: p.createdBy.name,
           }))}
-          isAdmin={isAdmin}
+          isAdmin={isAdminFlag}
         />
       )}
 

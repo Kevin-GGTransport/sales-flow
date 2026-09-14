@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
 import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
 
 export type PartRow = {
@@ -18,8 +18,8 @@ export type PartRow = {
   isActive: boolean;
 };
 
-export function PartsTable({ rows, empty }: { rows: PartRow[]; empty?: React.ReactNode }) {
-  const columns: DataTableColumn<PartRow>[] = [
+// 列定义不闭包任何 props，提升到模块级保持引用稳定（DataTable 的 useMemo 依赖它）
+const columns: DataTableColumn<PartRow>[] = [
     {
       key: "partNumber",
       header: "配件号",
@@ -45,12 +45,7 @@ export function PartsTable({ rows, empty }: { rows: PartRow[]; empty?: React.Rea
       header: "类型",
       card: "badge",
       sortValue: (r) => (r.isConsignment ? "寄卖" : "自营"),
-      cell: (r) =>
-        r.isConsignment ? (
-          <Badge variant="outline">寄卖</Badge>
-        ) : (
-          <Badge variant="secondary">自营</Badge>
-        ),
+      cell: (r) => <ConsignmentBadge isConsignment={r.isConsignment} />,
     },
     {
       key: "qty",
@@ -80,8 +75,9 @@ export function PartsTable({ rows, empty }: { rows: PartRow[]; empty?: React.Rea
       sortValue: (r) => r.value,
       cell: (r) => r.valueText,
     },
-  ];
+];
 
+export function PartsTable({ rows, empty }: { rows: PartRow[]; empty?: React.ReactNode }) {
   return (
     <DataTable
       columns={columns}

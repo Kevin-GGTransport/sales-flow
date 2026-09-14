@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { formatUSDNumber } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,11 @@ export function OrderLineEditor({
   allowConsignment?: boolean;
 }) {
   const [parts, setParts] = useState(initialParts);
+  // 行级配件查找 O(1)：替代每行每渲染的 parts.find（O(行×配件)）
+  const partById = useMemo(
+    () => new Map(parts.map((p) => [p.id, p])),
+    [parts],
+  );
 
   const money = (s: string) => {
     const n = Number(s);
@@ -64,7 +70,7 @@ export function OrderLineEditor({
       </div>
 
       {value.map((row) => {
-        const part = parts.find((p) => p.id === row.partId);
+        const part = partById.get(row.partId);
         const subtotal = money(row.qty) * money(row.unitPrice);
         return (
           <div
@@ -103,7 +109,7 @@ export function OrderLineEditor({
               className="text-right"
             />
             <span className="text-right text-sm tabular-nums">
-              {subtotal ? `$${subtotal.toFixed(2)}` : "-"}
+              {formatUSDNumber(subtotal || null)}
             </span>
             <Button
               type="button"
@@ -141,7 +147,7 @@ export function OrderLineEditor({
           />
         </div>
         <p className="text-sm font-medium tabular-nums">
-          合计：<span className="text-base">${total.toFixed(2)}</span>
+          合计：<span className="text-base">{formatUSDNumber(total)}</span>
         </p>
       </div>
     </div>

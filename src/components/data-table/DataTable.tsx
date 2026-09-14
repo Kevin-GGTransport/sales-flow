@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsDesktop } from "@/lib/use-desktop";
 import {
   Table,
   TableBody,
@@ -88,6 +89,28 @@ function resolveCardRoles<T>(
   return roles;
 }
 
+/** 卡片模式的列分组：整个卡片列表只算一次（替代每行 5 次 filter/find） */
+type CardColumnGroups<T> = {
+  titleCol: DataTableColumn<T> | undefined;
+  badgeCols: DataTableColumn<T>[];
+  metaCols: DataTableColumn<T>[];
+  amountCols: DataTableColumn<T>[];
+  actionsCol: DataTableColumn<T> | undefined;
+};
+
+function partitionCardColumns<T>(
+  columns: DataTableColumn<T>[],
+  roles: Map<string, DataTableCardRole>,
+): CardColumnGroups<T> {
+  return {
+    titleCol: columns.find((c) => roles.get(c.key) === "title"),
+    badgeCols: columns.filter((c) => roles.get(c.key) === "badge"),
+    metaCols: columns.filter((c) => roles.get(c.key) === "meta"),
+    amountCols: columns.filter((c) => roles.get(c.key) === "amount"),
+    actionsCol: columns.find((c) => roles.get(c.key) === "actions"),
+  };
+}
+
 /** 卡片模式顶部的细栏：左侧 cardToolbar（如全选），右侧排序下拉（与表头共享同一状态） */
 function CardSortBar<T>({
   columns,
@@ -153,20 +176,14 @@ function CardSortBar<T>({
 /** 单行卡片：标题行（title + badge 角标）→ 「表头: 值」网格 → 双线上的金额行 → 操作脚注 */
 function RowCard<T>({
   row,
-  columns,
-  roles,
+  groups,
   className,
 }: {
   row: T;
-  columns: DataTableColumn<T>[];
-  roles: Map<string, DataTableCardRole>;
+  groups: CardColumnGroups<T>;
   className?: string;
 }) {
-  const titleCol = columns.find((c) => roles.get(c.key) === "title");
-  const badgeCols = columns.filter((c) => roles.get(c.key) === "badge");
-  const metaCols = columns.filter((c) => roles.get(c.key) === "meta");
-  const amountCols = columns.filter((c) => roles.get(c.key) === "amount");
-  const actionsCol = columns.find((c) => roles.get(c.key) === "actions");
+  const { titleCol, badgeCols, metaCols, amountCols, actionsCol } = groups;
 
   return (
     <Card size="sm" className={className}>
@@ -231,6 +248,179 @@ function RowCard<T>({
   );
 }
 
+/** 桌面表格视图（≥1441px） */
+function TableView<T>({
+  columns,
+  sortedRows,
+  sort,
+  onSortChange,
+  empty,
+  rowClassName,
+  className,
+  rowKey,
+}: {
+  columns: DataTableColumn<T>[];
+  sortedRows: T[];
+  sort: SortState;
+  onSortChange: (next: SortState) => void;
+  empty: React.ReactNode;
+  rowClassName?: (row: T) => string;
+  className?: string;
+  rowKey: (row: T) => string;
+}) {
+  function renderHead<T2>(col: DataTableColumn<T2>, key: string) {
+    const active = sort?.key === key;
+    const SortIcon =
+      active && sort?.dir === "asc"
+        ? ArrowUp
+        : active && sort?.dir === "desc"
+          ? ArrowDown
+          : ChevronsUpDown;
+    return (
+      <TableHead
+        key={key}
+        aria-sort={
+          col.sortValue
+            ? active
+              ? sort?.dir === "asc"
+                ? "ascending"
+                : "descending"
+              : "none"
+            : undefined
+        }
+        className={cn(
+          "p-0",
+          col.sortValue && "group/head",
+          col.align === "right" && "text-right",
+          col.className,
+        )}
+      >
+        {col.sortValue ? (
+          <button
+            type="button"
+            onClick={() => onSortChange(nextSortState(sort, key))}
+            className={cn(
+              "inline-flex h-10 w-full items-center gap-1 px-2 text-left font-medium whitespace-nowrap rounded-sm outline-none transition-colors",
+              "hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring",
+              col.align === "right" && "justify-end text-right",
+              active && "text-foreground",
+            )}
+          >
+            {col.header}
+            <SortIcon
+              aria-hidden
+              className={cn(
+                "size-3.5 shrink-0 transition-opacity",
+                active
+                  ? "text-primary opacity-100"
+                  : "opacity-0 group-hover/head:opacity-40 focus-visible:opacity-40",
+              )}
+            />
+          </button>
+        ) : (
+          <span className="inline-flex h-10 items-center px-2 font-medium">
+            {col.header}
+          </span>
+        )}
+      </TableHead>
+    );
+  }
+
+  return (
+    <Table className={className}>
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          {columns.map((col) => renderHead(col, col.key))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {sortedRows.length === 0 ? (
+          <TableRow>
+            <TableCell
+              colSpan={columns.length}
+              className="h-24 text-center text-muted-foreground"
+            >
+              {empty}
+            </TableCell>
+          </TableRow>
+        ) : (
+          sortedRows.map((row) => (
+            <TableRow key={rowKey(row)} className={rowClassName?.(row)}>
+              {columns.map((col) => (
+                <TableCell
+                  key={col.key}
+                  className={cn(
+                    col.align === "right" && "text-right",
+                    col.mono && "font-mono",
+                    col.className,
+                  )}
+                >
+                  {col.cell(row)}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  );
+}
+
+/** 笔记本模式卡片视图（≤1440px） */
+function CardListView<T>({
+  columns,
+  sortedRows,
+  roles,
+  sort,
+  onSortChange,
+  toolbar,
+  empty,
+  rowClassName,
+  rowKey,
+}: {
+  columns: DataTableColumn<T>[];
+  sortedRows: T[];
+  roles: Map<string, DataTableCardRole>;
+  sort: SortState;
+  onSortChange: (next: SortState) => void;
+  toolbar?: React.ReactNode;
+  empty: React.ReactNode;
+  rowClassName?: (row: T) => string;
+  rowKey: (row: T) => string;
+}) {
+  const groups = useMemo(
+    () => partitionCardColumns(columns, roles),
+    [columns, roles],
+  );
+
+  return (
+    <>
+      <CardSortBar
+        columns={columns}
+        sort={sort}
+        onSortChange={onSortChange}
+        toolbar={toolbar}
+      />
+      {sortedRows.length === 0 ? (
+        <div className="p-8 text-center text-sm text-muted-foreground">
+          {empty}
+        </div>
+      ) : (
+        <div className="grid gap-3 p-3">
+          {sortedRows.map((row) => (
+            <RowCard
+              key={rowKey(row)}
+              row={row}
+              groups={groups}
+              className={rowClassName?.(row)}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 /**
  * 列表页公共表格：声明式列配置 + 点列头排序（客户端排序，不动 URL）。
  * 页面侧约定：Server Component 取数并序列化（金额给显示字符串 + 排序数值），
@@ -238,7 +428,11 @@ function RowCard<T>({
  *
  * 响应式：≥1441px 渲染表格（点列头三态排序）；≤1440px（笔记本模式）渲染
  * 单列卡片 + 排序下拉，卡片布局由列的 card 角色标注/推断生成。两副渲染
- * 共享同一排序状态，CSS 断点切换、无闪烁。
+ * 共享同一排序状态，由 useIsDesktop 条件渲染切换（单棵树挂载）；SSR 先出
+ * 表格侧，hydration 后按实际视口同步切换，无闪烁。
+ *
+ * 注意：columns 含 cell/sortValue 闭包，消费组件必须保持引用稳定
+ * （模块级常量或 useMemo），否则下方 useMemo 会退化为每次重算。
  */
 export function DataTable<T>({
   columns,
@@ -278,130 +472,30 @@ export function DataTable<T>({
     });
   }, [rows, columns, sort]);
 
-  function renderHead<T2>(col: DataTableColumn<T2>, key: string) {
-    const active = sort?.key === key;
-    const SortIcon =
-      active && sort?.dir === "asc"
-        ? ArrowUp
-        : active && sort?.dir === "desc"
-          ? ArrowDown
-          : ChevronsUpDown;
-    return (
-      <TableHead
-        key={key}
-        aria-sort={
-          col.sortValue
-            ? active
-              ? sort?.dir === "asc"
-                ? "ascending"
-                : "descending"
-              : "none"
-            : undefined
-        }
-        className={cn(
-          "p-0",
-          col.sortValue && "group/head",
-          col.align === "right" && "text-right",
-          col.className,
-        )}
-      >
-        {col.sortValue ? (
-          <button
-            type="button"
-            onClick={() => setSort((s) => nextSortState(s, key))}
-            className={cn(
-              "inline-flex h-10 w-full items-center gap-1 px-2 text-left font-medium whitespace-nowrap rounded-sm outline-none transition-colors",
-              "hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring",
-              col.align === "right" && "justify-end text-right",
-              active && "text-foreground",
-            )}
-          >
-            {col.header}
-            <SortIcon
-              aria-hidden
-              className={cn(
-                "size-3.5 shrink-0 transition-opacity",
-                active
-                  ? "text-primary opacity-100"
-                  : "opacity-0 group-hover/head:opacity-40 focus-visible:opacity-40",
-              )}
-            />
-          </button>
-        ) : (
-          <span className="inline-flex h-10 items-center px-2 font-medium">
-            {col.header}
-          </span>
-        )}
-      </TableHead>
-    );
-  }
+  const isDesktop = useIsDesktop();
 
-  return (
-    <>
-      <div className="hidden laptop:block">
-        <Table className={className}>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              {columns.map((col) => renderHead(col, col.key))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedRows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  {empty}
-                </TableCell>
-              </TableRow>
-            ) : (
-              sortedRows.map((row) => (
-                <TableRow key={rowKey(row)} className={rowClassName?.(row)}>
-                  {columns.map((col) => (
-                    <TableCell
-                      key={col.key}
-                      className={cn(
-                        col.align === "right" && "text-right",
-                        col.mono && "font-mono",
-                        col.className,
-                      )}
-                    >
-                      {col.cell(row)}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="laptop:hidden">
-        <CardSortBar
-          columns={columns}
-          sort={sort}
-          onSortChange={setSort}
-          toolbar={cardToolbar}
-        />
-        {sortedRows.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            {empty}
-          </div>
-        ) : (
-          <div className="grid gap-3 p-3">
-            {sortedRows.map((row) => (
-              <RowCard
-                key={rowKey(row)}
-                row={row}
-                columns={columns}
-                roles={cardRoles}
-                className={rowClassName?.(row)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+  return isDesktop ? (
+    <TableView
+      columns={columns}
+      sortedRows={sortedRows}
+      sort={sort}
+      onSortChange={setSort}
+      empty={empty}
+      rowClassName={rowClassName}
+      className={className}
+      rowKey={rowKey}
+    />
+  ) : (
+    <CardListView
+      columns={columns}
+      sortedRows={sortedRows}
+      roles={cardRoles}
+      sort={sort}
+      onSortChange={setSort}
+      toolbar={cardToolbar}
+      empty={empty}
+      rowClassName={rowClassName}
+      rowKey={rowKey}
+    />
   );
 }
