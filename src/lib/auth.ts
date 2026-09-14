@@ -12,6 +12,12 @@ const credentialsSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  // localhost 上与其他 NextAuth 应用（不同端口、同 host）并存时，默认 cookie 名
+  // authjs.session-token 会跨应用互发/互顶，导致 JWTSessionError 与互相登出；
+  // 用专属名隔离本应用的 session cookie
+  cookies: {
+    sessionToken: { name: "sales-flow.session-token" },
+  },
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers: [
