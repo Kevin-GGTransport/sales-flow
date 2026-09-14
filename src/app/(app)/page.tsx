@@ -81,10 +81,10 @@ export default async function DashboardPage() {
   const { receivable: totalReceivable, payable: totalPayable } = dues;
 
   const cards = [
-    { label: "本月卖出（单据）", value: formatUSD(monthSales._sum.totalAmount), href: "/sales" },
-    { label: "本月实收（现金）", value: formatUSD(received), href: "/payments" },
-    { label: "本月买入（单据）", value: formatUSD(monthPurchases._sum.totalAmount), href: "/purchases" },
-    { label: "本月实付（现金）", value: formatUSD(paid), href: "/payments" },
+    { label: "本月卖出（单据）", value: formatUSD(monthSales._sum.totalAmount), href: "/orders?tab=sales" },
+    { label: "本月实收（现金）", value: formatUSD(received), href: "/settlement?tab=payments" },
+    { label: "本月买入（单据）", value: formatUSD(monthPurchases._sum.totalAmount), href: "/orders?tab=purchases" },
+    { label: "本月实付（现金）", value: formatUSD(paid), href: "/settlement?tab=payments" },
     { label: "当前库存总价值", value: formatUSD(inventoryValue), href: "/reports" },
   ];
 
@@ -92,13 +92,13 @@ export default async function DashboardPage() {
     {
       label: "应收欠款（客户欠我们）",
       value: formatUSD(totalReceivable),
-      href: "/payments",
+      href: "/settlement?tab=payments",
       tone: totalReceivable.greaterThan(0) ? "destructive" : "muted",
     },
     {
       label: "应付欠款（我们欠供应商）",
       value: formatUSD(totalPayable),
-      href: "/payments",
+      href: "/settlement?tab=payments",
       tone: totalPayable.greaterThan(0) ? "muted" : "muted",
     },
     {
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
     {
       label: "未开票卖出单",
       value: String(uninvoicedCount),
-      href: "/invoices",
+      href: "/settlement?tab=invoices",
       tone: uninvoicedCount > 0 ? "muted" : "muted",
     },
   ];

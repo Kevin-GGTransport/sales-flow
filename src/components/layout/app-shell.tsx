@@ -1,11 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
-  adminNavItem,
-  NavLinks,
-  navItems,
+  activeSectionKey,
+  NavGroupsView,
   Sidebar,
 } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
@@ -39,14 +38,29 @@ export function AppShell({
   const [collapsed, setCollapsed] = React.useState(defaultCollapsed);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const pathname = usePathname();
-  const items = isAdmin ? [...navItems, adminNavItem] : [...navItems];
+  const tab = useSearchParams().get("tab") ?? undefined;
 
-  // 路由变化即关抽屉（覆盖浏览器前进/后退）：渲染期对比上一跳路径，
-  // 不用 effect（避免级联渲染，react-hooks/set-state-in-effect）
-  const [prevPathname, setPrevPathname] = React.useState(pathname);
-  if (prevPathname !== pathname) {
-    setPrevPathname(pathname);
+  // 二级菜单展开状态（桌面侧边栏与抽屉共享）：初始展开当前所在组
+  const [openSections, setOpenSections] = React.useState<Record<string, boolean>>(
+    () => {
+      const key = activeSectionKey(pathname, tab);
+      return key ? { [key]: true } : {};
+    },
+  );
+  const toggleSection = React.useCallback((key: string) => {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  // 路由变化：关抽屉 + 自动展开目标组（覆盖浏览器前进/后退）：
+  // 渲染期对比上一跳位置，不用 effect（避免级联渲染，react-hooks/set-state-in-effect）
+  const [prevLocation, setPrevLocation] = React.useState({ pathname, tab });
+  if (prevLocation.pathname !== pathname || prevLocation.tab !== tab) {
+    setPrevLocation({ pathname, tab });
     setMobileOpen(false);
+    const key = activeSectionKey(pathname, tab);
+    if (key && !openSections[key]) {
+      setOpenSections((prev) => ({ ...prev, [key]: true }));
+    }
   }
 
   const toggleCollapsed = React.useCallback(() => {
@@ -57,7 +71,15 @@ export function AppShell({
 
   return (
     <div className="flex min-h-svh">
-      <Sidebar isAdmin={isAdmin} collapsed={collapsed} onToggle={toggleCollapsed} />
+      <Sidebar
+        isAdmin={isAdmin}
+        collapsed={collapsed}
+        onToggle={toggleCollapsed}
+        pathname={pathname}
+        tab={tab}
+        openSections={openSections}
+        onToggleSection={toggleSection}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           name={name}
@@ -83,9 +105,12 @@ export function AppShell({
           </div>
           <SheetDescription className="sr-only">主导航菜单</SheetDescription>
           <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
-            <NavLinks
-              items={items}
+            <NavGroupsView
+              isAdmin={isAdmin}
               pathname={pathname}
+              tab={tab}
+              openSections={openSections}
+              onToggleSection={toggleSection}
               onNavigate={() => setMobileOpen(false)}
             />
           </nav>

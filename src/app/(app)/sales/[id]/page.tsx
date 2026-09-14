@@ -50,7 +50,10 @@ export default async function SaleDetailPage({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Link href="/sales" className="text-sm text-muted-foreground hover:underline">
+          <Link
+            href="/orders?tab=sales"
+            className="text-sm text-muted-foreground hover:underline"
+          >
             ← 卖出单
           </Link>
           <h1 className="text-2xl font-semibold tracking-tight">{order.orderNo}</h1>

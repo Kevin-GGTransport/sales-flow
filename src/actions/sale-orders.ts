@@ -116,10 +116,10 @@ export async function createSaleOrder(
 
     if ("error" in result) return { ok: false, error: result.error };
 
-    revalidatePath("/sales");
+    revalidatePath("/orders");
     revalidatePath("/parts");
     revalidatePath("/inventory");
-    redirect(result.id ? `/sales/${result.id}` : "/sales");
+    redirect(result.id ? `/sales/${result.id}` : "/orders?tab=sales");
   } catch (e) {
     if (e && typeof e === "object" && "digest" in e) throw e; // Next redirect
     return { ok: false, error: e instanceof Error ? e.message : "创建失败" };
@@ -166,7 +166,7 @@ export async function voidSaleOrder(
       }
     });
 
-    revalidatePath("/sales");
+    revalidatePath("/orders");
     revalidatePath(`/sales/${id}`);
     revalidatePath("/parts");
     revalidatePath("/inventory");

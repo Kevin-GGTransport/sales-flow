@@ -34,7 +34,7 @@ export async function createCustodyItem(input: {
         note: input.note?.trim() || null,
       },
     });
-    revalidatePath("/custody");
+    revalidatePath("/inventory");
     return { ok: true, id: item.id };
   } catch (e) {
     if (e instanceof Error && e.message.includes("Unique")) {
@@ -83,7 +83,7 @@ export async function addCustodyMovement(input: {
       });
     });
 
-    revalidatePath("/custody");
+    revalidatePath("/inventory");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "保存失败" };
@@ -113,7 +113,7 @@ export async function updateCustodyItem(
       where: { id },
       data: { ownerName, partNumber, partName, note: input.note?.trim() || null },
     });
-    revalidatePath("/custody");
+    revalidatePath("/inventory");
     return { ok: true, id };
   } catch (e) {
     if (e instanceof Error && e.message.includes("Unique")) {
@@ -136,7 +136,7 @@ export async function toggleCustodyItem(
       return { ok: false, error: `还有现存 ${item.qty} 件未退回，退清后才能停用` };
     }
     await prisma.custodyItem.update({ where: { id }, data: { isActive: next } });
-    revalidatePath("/custody");
+    revalidatePath("/inventory");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "操作失败" };

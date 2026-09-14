@@ -57,8 +57,8 @@ export async function markInvoiced(
       { maxWait: 10_000, timeout: 30_000 },
     );
 
-    revalidatePath("/invoices");
-    revalidatePath("/sales");
+    revalidatePath("/settlement");
+    revalidatePath("/orders");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "开票失败" };
@@ -85,8 +85,8 @@ export async function revokeInvoice(saleOrderId: string): Promise<ActionResult> 
       },
     });
 
-    revalidatePath("/invoices");
-    revalidatePath("/sales");
+    revalidatePath("/settlement");
+    revalidatePath("/orders");
     revalidatePath(`/sales/${saleOrderId}`);
     return { ok: true };
   } catch (e) {

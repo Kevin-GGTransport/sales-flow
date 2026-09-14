@@ -47,7 +47,10 @@ export default async function PurchaseDetailPage({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Link href="/purchases" className="text-sm text-muted-foreground hover:underline">
+          <Link
+            href="/orders?tab=purchases"
+            className="text-sm text-muted-foreground hover:underline"
+          >
             ← 买入单
           </Link>
           <h1 className="text-2xl font-semibold tracking-tight">{order.orderNo}</h1>

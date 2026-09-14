@@ -83,7 +83,7 @@ export async function addPayment(input: {
       { maxWait: 10_000, timeout: 30_000 },
     );
 
-    revalidatePath("/payments");
+    revalidatePath("/settlement");
     if (data.saleOrderId) revalidatePath(`/sales/${data.saleOrderId}`);
     if (data.purchaseOrderId) revalidatePath(`/purchases/${data.purchaseOrderId}`);
     return { ok: true };
@@ -100,7 +100,7 @@ export async function deletePayment(id: string): Promise<ActionResult> {
 
     await prisma.payment.delete({ where: { id } });
 
-    revalidatePath("/payments");
+    revalidatePath("/settlement");
     if (payment.saleOrderId) revalidatePath(`/sales/${payment.saleOrderId}`);
     if (payment.purchaseOrderId) revalidatePath(`/purchases/${payment.purchaseOrderId}`);
     return { ok: true };

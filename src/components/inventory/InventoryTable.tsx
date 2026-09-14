@@ -1,8 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
+import { StockAdjustDialog } from "@/components/parts/StockAdjustDialog";
 import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
 
 export type InventoryRow = {
@@ -19,8 +21,10 @@ export type InventoryRow = {
   status: "normal" | "low" | "negative";
 };
 
-// 列定义不闭包任何 props，提升到模块级保持引用稳定（DataTable 的 useMemo 依赖它）
-const columns: DataTableColumn<InventoryRow>[] = [
+// 列工厂闭包 isAdmin（自营盘盈亏仅 ADMIN 行内可见；寄卖调整 STAFF 也可），
+// 组件内 useMemo 包裹保持引用稳定（DataTable 的 useMemo 依赖它）——同 PaymentsTables 先例
+function createColumns(isAdmin: boolean): DataTableColumn<InventoryRow>[] {
+  return [
     {
       key: "partNumber",
       header: "配件号",
@@ -91,15 +95,33 @@ const columns: DataTableColumn<InventoryRow>[] = [
           <span className="text-muted-foreground">-</span>
         ),
     },
-];
+    {
+      key: "actions",
+      header: "操作",
+      className: "w-0",
+      cell: (r) =>
+        r.isConsignment || isAdmin ? (
+          <StockAdjustDialog
+            partId={r.id}
+            partNumber={r.partNumber}
+            isConsignment={r.isConsignment}
+            compact
+          />
+        ) : null,
+    },
+  ];
+}
 
 export function InventoryTable({
   rows,
+  isAdmin = false,
   empty,
 }: {
   rows: InventoryRow[];
+  isAdmin?: boolean;
   empty?: React.ReactNode;
 }) {
+  const columns = useMemo(() => createColumns(isAdmin), [isAdmin]);
   return (
     <DataTable
       columns={columns}

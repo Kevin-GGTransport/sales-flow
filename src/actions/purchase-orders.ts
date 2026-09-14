@@ -132,7 +132,7 @@ export async function createPurchaseOrder(
 
     if (!result.ok) return result;
 
-    revalidatePath("/purchases");
+    revalidatePath("/orders");
     revalidatePath("/parts");
     revalidatePath("/inventory");
     redirect(`/purchases/${result.id}`);
@@ -183,7 +183,7 @@ export async function voidPurchaseOrder(
       }
     });
 
-    revalidatePath("/purchases");
+    revalidatePath("/orders");
     revalidatePath(`/purchases/${id}`);
     revalidatePath("/parts");
     revalidatePath("/inventory");

@@ -20,18 +20,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 /**
- * 库存调整（配件详情页）：
+ * 库存调整（配件详情页 / 库存总览行内）：
  * - 寄卖件（STAFF 可见）：寄卖入库 / 退回，只记数量不记钱
  * - 自营件（仅 ADMIN 可见）：盘盈 / 盘亏，成本基础记 0 不改均价
+ * compact：表格行内的图标小按钮（短文案），避免撑高行
  */
 export function StockAdjustDialog({
   partId,
   partNumber,
   isConsignment,
+  compact = false,
 }: {
   partId: string;
   partNumber: string;
   isConsignment: boolean;
+  compact?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -41,7 +44,7 @@ export function StockAdjustDialog({
 
   const copy = isConsignment
     ? {
-        button: "寄卖入库/退回",
+        button: compact ? "调整" : "寄卖入库/退回",
         title: `寄卖入库 / 退回（${partNumber}）`,
         description: "只记数量不记钱。正数 = 明治的件送来了；负数 = 退回给寄卖方。",
         qtyLabel: "数量（退回用负数，如 -3）*",
@@ -50,7 +53,7 @@ export function StockAdjustDialog({
           qty > 0 ? `已寄卖入库 ${qty} 件` : `已退回 ${-qty} 件`,
       }
     : {
-        button: "库存调整（盘盈/盘亏）",
+        button: compact ? "盘点" : "库存调整（盘盈/盘亏）",
         title: `盘盈 / 盘亏（${partNumber}）`,
         description:
           "盘点纠偏，仅管理员。正数 = 盘盈（成本基础记 0，不改变平均成本）；负数 = 盘亏。正常进货请用买入单。",
@@ -84,9 +87,14 @@ export function StockAdjustDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button
+          variant={compact ? "ghost" : "outline"}
+          size={compact ? "icon" : "sm"}
+          aria-label={copy.button}
+          title={copy.button}
+        >
           <ArrowDownUp className="size-4" />
-          {copy.button}
+          {!compact && copy.button}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
