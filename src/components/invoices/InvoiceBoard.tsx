@@ -65,6 +65,9 @@ export function InvoiceBoard({
     );
   }
 
+  // 表头勾选框（表格模式）与卡片模式「全选」共用
+  const allChecked = uninvoiced.length > 0 && selected.size === uninvoiced.length;
+
   async function handleMarkInvoiced() {
     if (selected.size === 0) {
       toast.error("请先勾选要开票的卖出单");
@@ -96,13 +99,14 @@ export function InvoiceBoard({
       header: (
         <input
           type="checkbox"
-          checked={uninvoiced.length > 0 && selected.size === uninvoiced.length}
+          checked={allChecked}
           onChange={toggleAll}
           aria-label="全选"
           className="size-4"
         />
       ),
       className: "w-10",
+      card: "badge",
       cell: (o) => (
         <input
           type="checkbox"
@@ -218,6 +222,18 @@ export function InvoiceBoard({
           rows={uninvoiced}
           rowKey={(o) => o.id}
           empty="没有待开票的卖出单"
+          cardToolbar={
+            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={allChecked}
+                onChange={toggleAll}
+                aria-label="全选"
+                className="size-4"
+              />
+              全选
+            </label>
+          }
         />
       </div>
 

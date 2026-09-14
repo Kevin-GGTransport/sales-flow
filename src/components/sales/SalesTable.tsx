@@ -47,6 +47,7 @@ export function SalesTable({ rows }: { rows: SaleRow[] }) {
     {
       key: "invoice",
       header: "开票",
+      card: "badge",
       sortValue: (r) => r.invoiceNo,
       cell: (r) =>
         r.invoiceNo ? (
@@ -57,7 +58,7 @@ export function SalesTable({ rows }: { rows: SaleRow[] }) {
           "-"
         ),
     },
-    { key: "status", header: "状态", cell: (r) => <OrderStatusBadge status={r.status} /> },
+    { key: "status", header: "状态", card: "badge", cell: (r) => <OrderStatusBadge status={r.status} /> },
     { key: "by", header: "录单人", sortValue: (r) => r.createdBy, cell: (r) => r.createdBy },
   ];
 

@@ -24,6 +24,7 @@ export function RecentOrdersTable({ rows }: { rows: RecentOrderRow[] }) {
     {
       key: "kind",
       header: "类型",
+      card: "badge",
       sortValue: (r) => r.kind,
       cell: (r) => (
         <Badge variant={r.kind === "买入" ? "secondary" : "outline"}>
@@ -51,6 +52,7 @@ export function RecentOrdersTable({ rows }: { rows: RecentOrderRow[] }) {
     {
       key: "status",
       header: "状态",
+      card: "badge",
       cell: (r) => (
         <div className="flex items-center gap-1">
           <OrderStatusBadge status={r.status} />

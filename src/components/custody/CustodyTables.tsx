@@ -102,7 +102,7 @@ export function CustodyItemsTable({
 export function CustodyFlowTable({ rows }: { rows: CustodyFlowRow[] }) {
   const columns: DataTableColumn<CustodyFlowRow>[] = [
     { key: "moveDate", header: "日期", sortValue: (r) => r.moveDate, cell: (r) => r.moveDate },
-    { key: "label", header: "货主 / 配件", sortValue: (r) => r.label, cell: (r) => r.label },
+    { key: "label", header: "货主 / 配件", card: "title", sortValue: (r) => r.label, cell: (r) => r.label },
     {
       key: "qty",
       header: "数量变动",

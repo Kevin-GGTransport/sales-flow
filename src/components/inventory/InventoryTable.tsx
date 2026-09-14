@@ -43,6 +43,7 @@ export function InventoryTable({
     {
       key: "type",
       header: "类型",
+      card: "badge",
       sortValue: (r) => (r.isConsignment ? "寄卖" : "自营"),
       cell: (r) =>
         r.isConsignment ? (
@@ -90,6 +91,7 @@ export function InventoryTable({
     {
       key: "status",
       header: "状态",
+      card: "badge",
       cell: (r) =>
         r.status === "negative" ? (
           <Badge variant="destructive">负库存</Badge>

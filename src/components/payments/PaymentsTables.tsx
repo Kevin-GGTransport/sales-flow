@@ -99,6 +99,7 @@ export function PaymentFlowTable({ rows }: { rows: PaymentFlowRow[] }) {
     {
       key: "direction",
       header: "方向",
+      card: "badge",
       sortValue: (r) => r.direction,
       cell: (r) =>
         r.direction === "收入" ? (

@@ -43,6 +43,7 @@ export function PartsTable({ rows, empty }: { rows: PartRow[]; empty?: React.Rea
     {
       key: "type",
       header: "类型",
+      card: "badge",
       sortValue: (r) => (r.isConsignment ? "寄卖" : "自营"),
       cell: (r) =>
         r.isConsignment ? (

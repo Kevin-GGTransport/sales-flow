@@ -208,6 +208,7 @@ export function UsersTable({ users, meId }: { users: UserRow[]; meId: string }) 
     {
       key: "status",
       header: "状态",
+      card: "badge",
       sortValue: (u) => (u.isActive ? "在用" : "已停用"),
       cell: (u) =>
         u.isActive ? <Badge>在用</Badge> : <Badge variant="destructive">已停用</Badge>,
