@@ -301,7 +301,7 @@ function TableView<T>({
             onClick={() => onSortChange(nextSortState(sort, key))}
             className={cn(
               "inline-flex h-10 w-full items-center gap-1 px-2 text-left font-medium whitespace-nowrap rounded-sm outline-none transition-colors",
-              "hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring",
+              "hover:bg-foreground/10 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring",
               col.align === "right" && "justify-end text-right",
               active && "text-foreground",
             )}
