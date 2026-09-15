@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SalesTable, type SaleRow } from "@/components/sales/SalesTable";
+import { TablePanel } from "@/components/ui/table-panel";
 
 /** 单据中心 · 卖出 Tab（原 /sales 列表主体搬迁；tab 由隐藏域随筛选保留） */
 export async function SalesPanel({
@@ -87,9 +88,9 @@ export async function SalesPanel({
         </Select>
       </ListFilterForm>
 
-      <div className="rounded-lg border">
+      <TablePanel>
         <SalesTable rows={rows} />
-      </div>
+      </TablePanel>
     </div>
   );
 }

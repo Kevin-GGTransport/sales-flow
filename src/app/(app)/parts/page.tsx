@@ -8,6 +8,7 @@ import {
   ShowInactiveCheckbox,
 } from "@/components/ui/list-filter-form";
 import { PartsTable, type PartRow } from "@/components/parts/PartsTable";
+import { TablePanel } from "@/components/ui/table-panel";
 
 export default async function PartsPage({
   searchParams,
@@ -66,12 +67,12 @@ export default async function PartsPage({
         <ShowInactiveCheckbox defaultChecked={includeInactive} />
       </ListFilterForm>
 
-      <div className="rounded-lg border">
+      <TablePanel>
         <PartsTable
           rows={rows}
           empty={keyword ? "没有匹配的配件" : undefined}
         />
-      </div>
+      </TablePanel>
     </div>
   );
 }

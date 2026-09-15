@@ -7,6 +7,7 @@ import {
   StatusSelect,
 } from "@/components/ui/list-filter-form";
 import { PurchasesTable, type PurchaseRow } from "@/components/purchases/PurchasesTable";
+import { TablePanel } from "@/components/ui/table-panel";
 
 /** 单据中心 · 买入 Tab（原 /purchases 列表主体搬迁；tab 由隐藏域随筛选保留） */
 export async function PurchasesPanel({
@@ -62,9 +63,9 @@ export async function PurchasesPanel({
         <StatusSelect defaultValue={status ?? "ALL"} className="w-32" />
       </ListFilterForm>
 
-      <div className="rounded-lg border">
+      <TablePanel>
         <PurchasesTable rows={rows} />
-      </div>
+      </TablePanel>
     </div>
   );
 }

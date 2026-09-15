@@ -19,6 +19,7 @@ import {
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { VoidOrderDialog } from "@/components/orders/VoidOrderDialog";
 import { PaymentsCard } from "@/components/payments/PaymentsCard";
+import { TablePanel } from "@/components/ui/table-panel";
 
 export default async function PurchaseDetailPage({
   params,
@@ -90,7 +91,7 @@ export default async function PurchaseDetailPage({
         </CardContent>
       </Card>
 
-      <div className="rounded-lg border">
+      <TablePanel>
         <Table>
           <TableHeader>
             <TableRow>
@@ -132,7 +133,7 @@ export default async function PurchaseDetailPage({
             </TableRow>
           </TableBody>
         </Table>
-      </div>
+      </TablePanel>
 
       {order.status === "ACTIVE" && (
         <PaymentsCard

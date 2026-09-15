@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ListFilterForm } from "@/components/ui/list-filter-form";
 import { StatCard } from "@/components/ui/stat-card";
 import { InventoryTable, type InventoryRow } from "@/components/inventory/InventoryTable";
+import { TablePanel } from "@/components/ui/table-panel";
 
 /**
  * 状态判定（全局唯一定义，仪表盘共用）：
@@ -158,13 +159,13 @@ export async function StockPanel({
         <Input name="q" defaultValue={keyword} placeholder="搜索配件号 / 名称 / 品牌" className="w-72" />
       </ListFilterForm>
 
-      <div className="rounded-lg border">
+      <TablePanel>
         <InventoryTable
           rows={filtered}
           isAdmin={isAdmin(session)}
           empty={keyword ? "没有匹配的配件" : undefined}
         />
-      </div>
+      </TablePanel>
     </div>
   );
 }

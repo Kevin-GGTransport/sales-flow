@@ -161,14 +161,14 @@ export async function CustodyPanel({
         </div>
       )}
 
-      <div className="rounded-lg border">
+      <TablePanel>
         <CustodyItemsTable
           rows={itemRows}
           empty={
             keyword || ownerFilter ? "没有匹配的代保管货品" : undefined
           }
         />
-      </div>
+      </TablePanel>
 
       {items.length > 0 && (
         <TablePanel

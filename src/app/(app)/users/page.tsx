@@ -3,6 +3,7 @@ import { auth, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UsersTable } from "@/components/users/UsersTable";
 import { CreateUserDialog } from "@/components/users/CreateUserDialog";
+import { TablePanel } from "@/components/ui/table-panel";
 
 export default async function UsersPage() {
   const [session, users] = await Promise.all([
@@ -21,9 +22,9 @@ export default async function UsersPage() {
         <CreateUserDialog />
       </div>
 
-      <div className="rounded-lg border">
+      <TablePanel>
         <UsersTable users={users} meId={session.user.id} />
-      </div>
+      </TablePanel>
     </div>
   );
 }
