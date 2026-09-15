@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/list-filter-form";
 import { PartsTable, type PartRow } from "@/components/parts/PartsTable";
 import { TablePanel } from "@/components/ui/table-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function PartsPage({
   searchParams,
@@ -55,12 +56,14 @@ export default async function PartsPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">配件</h1>
-        <Button asChild>
-          <Link href="/parts/new">新建配件</Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="配件"
+        actions={
+          <Button asChild>
+            <Link href="/parts/new">新建配件</Link>
+          </Button>
+        }
+      />
 
       <ListFilterForm submitLabel="搜索">
         <Input name="q" defaultValue={keyword} placeholder="搜索配件号 / 名称 / 品牌" className="w-72" />

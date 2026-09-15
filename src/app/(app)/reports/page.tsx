@@ -10,6 +10,7 @@ import {
 } from "@/lib/reports";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
 import { TablePanel } from "@/components/ui/table-panel";
 import {
@@ -42,16 +43,18 @@ export default async function ReportsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">统计报表</h1>
-        <div className="flex gap-2">
-          {years.map((y) => (
-            <Button key={y} asChild variant={y === year ? "default" : "outline"} size="sm">
-              <Link href={`/reports?year=${y}`}>{y}</Link>
-            </Button>
-          ))}
-        </div>
-      </div>
+      <PageHeader
+        title="统计报表"
+        actions={
+          <div className="flex gap-2">
+            {years.map((y) => (
+              <Button key={y} asChild variant={y === year ? "default" : "outline"} size="sm">
+                <Link href={`/reports?year=${y}`}>{y}</Link>
+              </Button>
+            ))}
+          </div>
+        }
+      />
 
       <TablePanel
         title={
@@ -88,7 +91,7 @@ export default async function ReportsPage({
                 </TableRow>
               ))
             )}
-            <TableRow>
+            <TableRow className="border-t-[3px] border-double bg-muted/40">
               <TableCell colSpan={4} className="text-right font-medium">合计</TableCell>
               <TableCell className="text-right font-medium tabular-nums">
                 {formatUSD(inventory.ownedTotalValue)}

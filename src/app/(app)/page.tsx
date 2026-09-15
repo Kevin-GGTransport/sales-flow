@@ -10,6 +10,7 @@ import {
 } from "@/lib/reports";
 import { StatCard } from "@/components/ui/stat-card";
 import { TablePanel } from "@/components/ui/table-panel";
+import { PageHeader } from "@/components/ui/page-header";
 import { RecentOrdersTable, type RecentOrderRow } from "@/components/orders/RecentOrdersTable";
 
 function monthRangeUtc(): { start: Date; end: Date } {
@@ -148,9 +149,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-semibold tracking-tight">
-        你好，{session?.user?.name ?? ""}
-      </h1>
+      <PageHeader title={<>你好，{session?.user?.name ?? ""}</>} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c) => (

@@ -1,4 +1,5 @@
 import { UrlTabs } from "@/components/ui/url-tabs";
+import { PageHeader } from "@/components/ui/page-header";
 import { PaymentsPanel } from "@/components/settlement/PaymentsPanel";
 import { InvoicesPanel } from "@/components/settlement/InvoicesPanel";
 
@@ -11,7 +12,7 @@ export default async function SettlementPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">结算中心</h1>
+      <PageHeader title="结算中心" />
 
       <UrlTabs
         value={tab}

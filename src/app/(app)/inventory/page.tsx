@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { UrlTabs } from "@/components/ui/url-tabs";
+import { PageHeader } from "@/components/ui/page-header";
 import { StockPanel } from "@/components/inventory/StockPanel";
 import { CustodyPanel } from "@/components/custody/CustodyPanel";
 import { NewCustodyItemDialog } from "@/components/custody/dialogs/NewCustodyItemDialog";
@@ -14,16 +15,18 @@ export default async function InventoryPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">库存</h1>
-        {tab === "custody" ? (
-          <NewCustodyItemDialog />
-        ) : (
-          <Button asChild variant="secondary">
-            <Link href="/parts">管理配件</Link>
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="库存"
+        actions={
+          tab === "custody" ? (
+            <NewCustodyItemDialog />
+          ) : (
+            <Button asChild variant="secondary">
+              <Link href="/parts">管理配件</Link>
+            </Button>
+          )
+        }
+      />
 
       <UrlTabs
         value={tab}

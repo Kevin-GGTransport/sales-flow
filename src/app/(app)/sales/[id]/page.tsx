@@ -20,6 +20,7 @@ import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { VoidOrderDialog } from "@/components/orders/VoidOrderDialog";
 import { PaymentsCard } from "@/components/payments/PaymentsCard";
 import { TablePanel } from "@/components/ui/table-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function SaleDetailPage({
   params,
@@ -49,37 +50,36 @@ export default async function SaleDetailPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/orders?tab=sales"
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            ← 卖出单
-          </Link>
-          <h1 className="text-2xl font-semibold tracking-tight">{order.orderNo}</h1>
-          <OrderStatusBadge status={order.status} />
-          {order.invoiceNo && <Badge>已开票 {order.invoiceNo}</Badge>}
-        </div>
-        <div className="flex gap-2">
-          {order.status === "ACTIVE" && (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/sales/new?copyFrom=${order.id}`}>
-                <Copy className="size-4" />
-                复制重开
-              </Link>
-            </Button>
-          )}
-          {isAdminFlag && order.status === "ACTIVE" && (
-            <VoidOrderDialog
-              kind="sale"
-              orderId={order.id}
-              disabled={Boolean(order.invoiceNo)}
-              disabledReason="已开票的单不能直接作废：请先在「开票」页撤销开票。"
-            />
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title={order.orderNo}
+        back={{ href: "/orders?tab=sales", label: "← 卖出单" }}
+        meta={
+          <>
+            <OrderStatusBadge status={order.status} />
+            {order.invoiceNo && <Badge>已开票 {order.invoiceNo}</Badge>}
+          </>
+        }
+        actions={
+          <div className="flex gap-2">
+            {order.status === "ACTIVE" && (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/sales/new?copyFrom=${order.id}`}>
+                  <Copy className="size-4" />
+                  复制重开
+                </Link>
+              </Button>
+            )}
+            {isAdminFlag && order.status === "ACTIVE" && (
+              <VoidOrderDialog
+                kind="sale"
+                orderId={order.id}
+                disabled={Boolean(order.invoiceNo)}
+                disabledReason="已开票的单不能直接作废：请先在「开票」页撤销开票。"
+              />
+            )}
+          </div>
+        }
+      />
 
       <Card>
         <CardHeader className="pb-2">
@@ -162,7 +162,7 @@ export default async function SaleDetailPage({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow>
+            <TableRow className="border-t-[3px] border-double bg-muted/40">
               <TableCell colSpan={4} className="text-right font-medium">
                 合计
               </TableCell>

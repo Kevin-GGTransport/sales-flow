@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { PurchaseOrderForm } from "@/components/orders/PurchaseOrderForm";
 import type { PartOption } from "@/components/parts/PartPicker";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function NewPurchasePage({
   searchParams,
@@ -48,9 +49,9 @@ export default async function NewPurchasePage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {copyFromData ? "复制重开买入单" : "新建买入单"}
-      </h1>
+      <PageHeader
+        title={copyFromData ? "复制重开买入单" : "新建买入单"}
+      />
       <PurchaseOrderForm parts={parts} copyFrom={copyFromData} />
     </div>
   );

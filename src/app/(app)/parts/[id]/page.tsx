@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
 import { StatCard } from "@/components/ui/stat-card";
 import { TablePanel } from "@/components/ui/table-panel";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Table,
   TableBody,
@@ -101,36 +101,38 @@ export default async function PartDetailPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Link href="/parts" className="text-sm text-muted-foreground hover:underline">
-            ← 配件
-          </Link>
-          <h1 className="text-2xl font-semibold tracking-tight">{part.partNumber}</h1>
-          <ConsignmentBadge isConsignment={part.isConsignment} />
-          {!part.isActive && <Badge variant="destructive">已停用</Badge>}
-        </div>
-        <div className="flex gap-2">
-          {(part.isConsignment || isAdminFlag) && (
-            <StockAdjustDialog
-              partId={part.id}
-              partNumber={part.partNumber}
-              isConsignment={part.isConsignment}
+      <PageHeader
+        title={part.partNumber}
+        back={{ href: "/parts", label: "← 配件" }}
+        meta={
+          <>
+            <ConsignmentBadge isConsignment={part.isConsignment} />
+            {!part.isActive && <Badge variant="destructive">已停用</Badge>}
+          </>
+        }
+        actions={
+          <div className="flex gap-2">
+            {(part.isConsignment || isAdminFlag) && (
+              <StockAdjustDialog
+                partId={part.id}
+                partNumber={part.partNumber}
+                isConsignment={part.isConsignment}
+              />
+            )}
+            <EditPartDialog
+              initial={{
+                id: part.id,
+                partNumber: part.partNumber,
+                name: part.name,
+                brand: part.brand ?? "",
+                description: part.description ?? "",
+                isConsignment: part.isConsignment,
+                minQty: part.minQty,
+              }}
             />
-          )}
-          <EditPartDialog
-            initial={{
-              id: part.id,
-              partNumber: part.partNumber,
-              name: part.name,
-              brand: part.brand ?? "",
-              description: part.description ?? "",
-              isConsignment: part.isConsignment,
-              minQty: part.minQty,
-            }}
-          />
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard

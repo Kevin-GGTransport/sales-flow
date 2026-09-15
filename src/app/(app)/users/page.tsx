@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { UsersTable } from "@/components/users/UsersTable";
 import { CreateUserDialog } from "@/components/users/CreateUserDialog";
 import { TablePanel } from "@/components/ui/table-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function UsersPage() {
   const [session, users] = await Promise.all([
@@ -17,10 +18,7 @@ export default async function UsersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">用户管理</h1>
-        <CreateUserDialog />
-      </div>
+      <PageHeader title="用户管理" actions={<CreateUserDialog />} />
 
       <TablePanel>
         <UsersTable users={users} meId={session.user.id} />
