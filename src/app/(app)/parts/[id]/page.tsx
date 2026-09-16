@@ -193,7 +193,7 @@ export default async function PartDetailPage({
               <EmptyRow colSpan={5}>还没有出入记录</EmptyRow>
             ) : (
               history.map((row) => (
-                <TableRow key={row.key} className={row.voided ? "opacity-50" : ""}>
+                <TableRow key={row.key} className={row.voided ? "text-muted-foreground" : ""}>
                   <TableCell>{formatDateString(row.date)}</TableCell>
                   <TableCell>{row.label}{row.voided && "（已作废）"}</TableCell>
                   <TableCell>{row.ref || "-"}</TableCell>

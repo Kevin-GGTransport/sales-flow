@@ -127,7 +127,7 @@ function CardSortBar<T>({
   if (sortableCols.length === 0 && !toolbar) return null;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
+    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-primary/10 bg-panel-header/70 px-3 py-2.5">
       {toolbar}
       {sortableCols.length > 0 && (
         <div className="ms-auto flex items-center gap-1.5">
@@ -186,7 +186,13 @@ function RowCard<T>({
   const { titleCol, badgeCols, metaCols, amountCols, actionsCol } = groups;
 
   return (
-    <Card size="sm" className={className}>
+    <Card
+      size="sm"
+      className={cn(
+        "border-border/65 bg-table-surface shadow-none transition-colors hover:border-primary/25 hover:bg-table-hover/35",
+        className,
+      )}
+    >
       {(titleCol || badgeCols.length > 0) && (
         <CardHeader>
           {titleCol && (
@@ -223,7 +229,7 @@ function RowCard<T>({
           {amountCols.length > 0 && (
             <div
               className={cn(
-                "flex flex-wrap items-baseline justify-end gap-x-5 gap-y-1 border-t-[3px] border-double border-border pt-2",
+                "flex flex-wrap items-baseline justify-end gap-x-5 gap-y-1 border-t-[3px] border-double border-primary/20 pt-2",
                 metaCols.length > 0 && "mt-3",
               )}
             >
@@ -242,7 +248,9 @@ function RowCard<T>({
         </CardContent>
       )}
       {actionsCol && (
-        <CardFooter className="justify-end">{actionsCol.cell(row)}</CardFooter>
+        <CardFooter className="justify-end border-primary/10 bg-panel-header/70">
+          {actionsCol.cell(row)}
+        </CardFooter>
       )}
     </Card>
   );
@@ -300,8 +308,8 @@ function TableView<T>({
             type="button"
             onClick={() => onSortChange(nextSortState(sort, key))}
             className={cn(
-              "inline-flex h-10 w-full items-center gap-1 px-2 text-left font-medium whitespace-nowrap rounded-sm outline-none transition-colors",
-              "hover:bg-foreground/10 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring",
+              "inline-flex h-11 w-full items-center gap-1 px-3 text-left text-xs font-semibold tracking-[0.02em] whitespace-nowrap rounded-sm outline-none transition-colors",
+              "hover:bg-primary/[0.07] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
               col.align === "right" && "justify-end text-right",
               active && "text-foreground",
             )}
@@ -313,12 +321,12 @@ function TableView<T>({
                 "size-3.5 shrink-0 transition-opacity",
                 active
                   ? "text-primary opacity-100"
-                  : "opacity-0 group-hover/head:opacity-40 focus-visible:opacity-40",
+                  : "opacity-25 group-hover/head:opacity-60 group-focus-within/head:opacity-60",
               )}
             />
           </button>
         ) : (
-          <span className="inline-flex h-10 items-center px-2 font-medium">
+          <span className="inline-flex h-11 items-center px-3 text-xs font-semibold tracking-[0.02em]">
             {col.header}
           </span>
         )}
@@ -335,7 +343,7 @@ function TableView<T>({
       </TableHeader>
       <TableBody>
         {sortedRows.length === 0 ? (
-          <TableRow>
+          <TableRow className="hover:bg-transparent">
             <TableCell
               colSpan={columns.length}
               className="h-24 text-center text-muted-foreground"
@@ -406,7 +414,7 @@ function CardListView<T>({
           {empty}
         </div>
       ) : (
-        <div className="grid gap-3 p-3">
+        <div className="grid gap-3 bg-table-stripe/35 p-3">
           {sortedRows.map((row) => (
             <RowCard
               key={rowKey(row)}

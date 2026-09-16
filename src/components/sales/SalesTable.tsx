@@ -69,7 +69,7 @@ export function SalesTable({ rows }: { rows: SaleRow[] }) {
       rows={rows}
       rowKey={(r) => r.id}
       empty="没有卖出单"
-      rowClassName={(r) => (r.status === "VOID" ? "opacity-60" : "")}
+      rowClassName={(r) => (r.status === "VOID" ? "text-muted-foreground" : "")}
     />
   );
 }

@@ -5,7 +5,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className="relative w-full overflow-x-auto bg-table-surface"
     >
       <table
         data-slot="table"
@@ -21,7 +21,10 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
     <thead
       data-slot="table-header"
       // 表头用会计双线（合计线）：双下划线在账簿里标记合计数
-      className={cn("[&_tr]:border-b-[3px] [&_tr]:border-double", className)}
+      className={cn(
+        "bg-table-head [&_tr]:border-b-[3px] [&_tr]:border-double [&_tr]:border-primary/25",
+        className,
+      )}
       {...props}
     />
   )
@@ -42,7 +45,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+        "border-t border-primary/20 bg-panel-header font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -55,7 +58,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b transition-colors hover:bg-accent/60 has-aria-expanded:bg-accent/60 data-[state=selected]:bg-accent",
+        "border-b border-border/65 transition-colors hover:bg-table-hover/70 has-aria-expanded:bg-primary/[0.08] data-[state=selected]:bg-primary/[0.12] data-[state=selected]:shadow-[inset_3px_0_0_hsl(var(--primary))]",
         className
       )}
       {...props}
@@ -68,8 +71,8 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        // 表头带：浅绿灰底 + 深墨小字（对比度强于 muted-foreground）
-        "h-10 bg-table-head px-2 text-left align-middle font-medium whitespace-nowrap text-foreground/75 [&:has([role=checkbox])]:pr-0",
+        // 表头颜色由 thead 统一承载，避免每个单元格像独立色块。
+        "h-11 bg-transparent px-3 text-left align-middle text-xs font-semibold tracking-[0.02em] whitespace-nowrap text-foreground/75 [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -82,7 +85,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        "px-3 py-2.5 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -110,7 +113,7 @@ function EmptyRow({
   children,
 }: React.ComponentProps<"td"> & { colSpan: number }) {
   return (
-    <TableRow>
+    <TableRow className="hover:bg-transparent">
       <TableCell
         colSpan={colSpan}
         className={cn("h-16 text-center text-muted-foreground", className)}

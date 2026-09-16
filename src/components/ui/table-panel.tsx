@@ -17,9 +17,14 @@ export function TablePanel({
   className?: string;
 }) {
   return (
-    <div className={cn("overflow-hidden rounded-lg border bg-card shadow-xs", className)}>
+    <div
+      className={cn(
+        "overflow-hidden rounded-lg border border-border/70 border-t-2 border-t-primary/35 bg-table-surface shadow-xs ring-1 ring-primary/5",
+        className,
+      )}
+    >
       {title !== undefined && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b p-3 font-heading text-sm font-medium">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-primary/10 bg-panel-header px-4 py-3 font-heading text-sm font-medium">
           <span className="flex min-w-0 flex-wrap items-center gap-2">{title}</span>
           {actions}
         </div>

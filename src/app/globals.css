@@ -41,6 +41,10 @@
   --color-card-foreground: hsl(var(--card-foreground));
   --color-card: hsl(var(--card));
   --color-table-head: hsl(var(--table-head));
+  --color-table-surface: hsl(var(--table-surface));
+  --color-table-stripe: hsl(var(--table-stripe));
+  --color-table-hover: hsl(var(--table-hover));
+  --color-panel-header: hsl(var(--panel-header));
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -79,7 +83,11 @@
   --destructive-foreground: 0 0% 98%;
   --border: 140 12% 82%;
   --input: 140 12% 79%;
-  --table-head: 138 14% 93%;
+  --table-head: 140 18% 91%;
+  --table-surface: 115 18% 98%;
+  --table-stripe: 128 14% 95%;
+  --table-hover: 142 20% 92%;
+  --panel-header: 136 16% 95%;
   --ring: 162 55% 27%;
   --chart-1: 162 55% 27%;
   --chart-2: 158 45% 40%;
@@ -116,7 +124,11 @@
   --destructive-foreground: 0 0% 98%;
   --border: 158 10% 22%;
   --input: 158 10% 25%;
-  --table-head: 158 12% 14%;
+  --table-head: 158 14% 15%;
+  --table-surface: 163 11% 9%;
+  --table-stripe: 160 11% 12%;
+  --table-hover: 157 14% 16%;
+  --panel-header: 160 12% 12%;
   --ring: 158 50% 52%;
   --chart-1: 158 50% 52%;
   --chart-2: 155 40% 62%;
@@ -145,5 +157,12 @@
   }
   ::selection {
     background: hsl(var(--primary) / 0.16);
+  }
+}
+
+@layer components {
+  /* 斑马纹是最低层表面：业务行上的 bg-* utility 可稳定覆盖它。 */
+  [data-slot="table-body"] > [data-slot="table-row"]:nth-child(even) {
+    background-color: hsl(var(--table-stripe) / 0.55);
   }
 }

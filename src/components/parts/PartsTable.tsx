@@ -85,7 +85,7 @@ export function PartsTable({ rows, empty }: { rows: PartRow[]; empty?: React.Rea
       rowKey={(r) => r.id}
       empty={empty ?? "还没有配件，点右上角「新建配件」"}
       initialSort={{ key: "partNumber", dir: "asc" }}
-      rowClassName={(r) => (r.isActive ? "" : "opacity-50")}
+      rowClassName={(r) => (r.isActive ? "" : "text-muted-foreground")}
     />
   );
 }

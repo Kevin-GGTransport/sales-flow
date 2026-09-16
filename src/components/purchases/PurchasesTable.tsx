@@ -53,7 +53,7 @@ export function PurchasesTable({ rows }: { rows: PurchaseRow[] }) {
       rows={rows}
       rowKey={(r) => r.id}
       empty="没有买入单"
-      rowClassName={(r) => (r.status === "VOID" ? "opacity-60" : "")}
+      rowClassName={(r) => (r.status === "VOID" ? "text-muted-foreground" : "")}
     />
   );
 }

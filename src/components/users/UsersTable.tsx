@@ -108,7 +108,7 @@ export function UsersTable({ users, meId }: { users: UserRow[]; meId: string }) 
         rows={users}
         rowKey={(u) => u.id}
         empty="还没有用户"
-        rowClassName={(u) => (u.isActive ? "" : "opacity-50")}
+        rowClassName={(u) => (u.isActive ? "" : "text-muted-foreground")}
       />
       {resetTarget && (
         <ResetPasswordDialog

@@ -122,7 +122,7 @@ export function CustodyItemsTable({
         rows={rows}
         rowKey={(r) => r.id}
         empty={empty ?? "还没有代保管货品，点右上角「登记代保管」"}
-        rowClassName={(r) => (r.isActive ? "" : "opacity-50")}
+        rowClassName={(r) => (r.isActive ? "" : "text-muted-foreground")}
       />
       {moveTarget && (
         <CustodyMoveDialog
