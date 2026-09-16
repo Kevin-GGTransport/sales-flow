@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**sales-flow** — 汽车配件买卖管理系统：买入（钱出+库存入）、卖出（钱入+库存出）、加权平均成本、分次收付款与应收应付跟踪、明治品牌寄卖件、批量开票 + 英文 PDF 发票、统计报表、多用户（ADMIN/STAFF）。界面中文、金额美元、发票英文。
+**sales-flow** — 汽车配件买卖管理系统：买入（钱出+库存入）、卖出（钱入+库存出）、加权平均成本、分次收付款与应收应付跟踪、明治品牌寄卖件、批量开票 + 英文 PDF 发票、经营汇总、多用户（ADMIN/STAFF）。界面中文、金额美元、发票英文。
 
 仓库：`https://github.com/Kevin-GGTransport/sales-flow`（本地目录名 sales-manage，与仓库名不一致没有影响）。
 
@@ -30,7 +30,7 @@ Next.js 16 (App Router, Turbopack) · TypeScript · Prisma 7（`prisma-client` �
 
 - **读写分工**：Server Components 读数据，Server Actions（`src/actions/`）写数据；唯一业务 Route Handler 是发票 PDF 下载（`src/app/api/invoices/[saleOrderId]/pdf/route.tsx`，注意含 JSX 所以是 .tsx）。
 - **鉴权**：`(app)/layout.tsx` 里 `auth()` + redirect（不用 middleware）；actions 用 `src/lib/guard.ts` 的 `requireUser()/requireAdmin()`。
-- **信息架构**：列表页合并为双 Tab 中心——`/orders`（?tab=sales|purchases，默认 sales）、`/settlement`（?tab=payments|invoices，默认 payments）、`/inventory`（?tab=stock|custody，默认 stock，代保管并入），Tab 由 `ui/url-tabs.tsx` URL 驱动、筛选表单用 `hidden={{tab}}` 保 Tab（默认 Tab 可不保）；旧 `/sales` `/purchases` `/payments` `/invoices` `/custody` 列表是 redirect 桩（透传 query），详情/新建页路由不变。侧边栏是可展开二级菜单（`Sidebar.tsx` 的 `navSections`），子项高亮靠 `NavChild.isActive(pathname, tab)`（合并中心按 tab 区分、旧前缀详情页也点亮），展开状态由 `app-shell.tsx` 持有并随路由自动展开所在组；折叠窄轨下组直达第一个子项。
+- **信息架构**：首页 `/` 是经营“汇总”，旧 `/reports` 永久重定向到首页；列表页合并为双 Tab 中心——`/orders`（?tab=sales|purchases，默认 sales）、`/settlement`（?tab=payments|invoices，默认 payments）、`/inventory`（?tab=stock|custody，默认 stock，代保管并入），Tab 由 `ui/url-tabs.tsx` URL 驱动、筛选表单用 `hidden={{tab}}` 保 Tab（默认 Tab 可不保）；旧 `/sales` `/purchases` `/payments` `/invoices` `/custody` 列表是 redirect 桩（透传 query），详情/新建页路由不变。侧边栏是可展开二级菜单（`Sidebar.tsx` 的 `navSections`），子项高亮靠 `NavChild.isActive(pathname, tab)`（合并中心按 tab 区分、旧前缀详情页也点亮），展开状态由 `app-shell.tsx` 持有并随路由自动展开所在组；折叠窄轨下组直达第一个子项。
 - **金额**：全链路 Decimal（单价/金额 2 位、成本 4 位 half-up），表单字符串经 zod 校验后 `new Decimal()`；`src/lib/money.ts`。传给客户端组件前先 `.toString()`。
 - **日期**：业务日期一律 UTC 零点入库，展示 `toISOString().slice(0,10)`（`src/lib/validation.ts`）。
 
@@ -40,7 +40,7 @@ Next.js 16 (App Router, Turbopack) · TypeScript · Prisma 7（`prisma-client` �
 - **加权平均成本**：`src/lib/weighted-average.ts` 纯函数——库存 ≤ 0 时进货，均价**直接重置为本次进价**（不 blend）；卖出可穿透负库存且不改均价。任何单据变更后库存由 `recomputeByReplay`（`src/lib/inventory.ts`）**按时间重放全部有效事件**得出，不用逆向冲销。
 - **成本快照不追溯**：卖出行的 `costAtSale` 是卖出当时的均价快照，永不重算（作废买入单也不改其他单的快照）。
 - **寄卖件**（明治）：`Part.isConsignment`，只走「寄卖入库/退回」（StockAdjustment，只动数量）；卖出只消库存、成本 0、不计利润；**禁止进买入单**。结算价与寄卖利润暂未做（用户待定），模型已预留（行级 `isConsignment` 快照）。
-- **库存调整**（StockAdjustment）：重放中一律 qty-only 事件（不动 avgCost）——自营件盘盈/盘亏（仅 ADMIN，盘盈成本基础记 0）与寄卖入库/退回共用；入口在配件详情与库存页行内（`StockAdjustDialog`，compact 用于表格行）。`Part.minQty` 为安全库存阈值（0=不预警），低库存=minQty>0 且 0≤qty≤minQty，与负库存互斥合并为「库存异常」（库存页 `/inventory` 与仪表盘）。
+- **库存调整**（StockAdjustment）：重放中一律 qty-only 事件（不动 avgCost）——自营件盘盈/盘亏（仅 ADMIN，盘盈成本基础记 0）与寄卖入库/退回共用；入口在配件详情与库存页行内（`StockAdjustDialog`，compact 用于表格行）。`Part.minQty` 为安全库存阈值（0=不预警），低库存=minQty>0 且 0≤qty≤minQty，与负库存互斥合并为「库存异常」（库存页 `/inventory` 与汇总页）。
 - **代保管**（库存页 `/inventory?tab=custody`）：别家存放的货（CustodyItem 按货主+配件号唯一 + CustodyMovement 流水），只记数量与归属——不进加权平均/库存价值/报表，不可卖出/买入，退回不许超过现存（纯保管不允许负数）。与寄卖的区别：寄卖我们帮卖、代保管只存放。旧 `/custody` 是 redirect 桩。
 - **收付款**：`Payment` 分次挂在买入/卖出单上（现金/支票/线上），未结=总额−Σ收款，**不允许超额收款**（事务内 FOR UPDATE 锁单行校验）；买入单可「当场付款」。删除收付款仅 ADMIN。
 - **开票**：`SaleOrder.invoiceNo` 为 null 即未开票；批量分配连续 INV 号（`nextOrderNo` 按天流水，作废单占号）；PDF 中文配件名靠思源黑体（`src/lib/pdf/fonts/`，~17MB 已入库，勿删）；公司抬头常量在 `src/lib/company.ts`。

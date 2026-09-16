@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   ArrowLeftRight,
-  BarChart3,
   Boxes,
   ChevronDown,
   LayoutDashboard,
@@ -139,7 +138,7 @@ function NavLink({
 }
 
 /**
- * 导航主体（桌面侧边栏与抽屉共用）：仪表盘 + 三个可展开组 + 统计/用户管理普通项。
+ * 导航主体（桌面侧边栏与抽屉共用）：汇总 + 三个可展开组 + 用户管理。
  * 展开状态由 AppShell 持有（两处共享）；折叠窄轨下组不可展开、直达组内第一项。
  */
 export function NavGroupsView({
@@ -164,7 +163,7 @@ export function NavGroupsView({
     <>
       <NavLink
         href="/"
-        label="仪表盘"
+        label="汇总"
         icon={LayoutDashboard}
         active={pathname === "/"}
         collapsed={collapsed}
@@ -233,14 +232,6 @@ export function NavGroupsView({
         );
       })}
 
-      <NavLink
-        href="/reports"
-        label="统计"
-        icon={BarChart3}
-        active={pathname.startsWith("/reports")}
-        collapsed={collapsed}
-        onNavigate={onNavigate}
-      />
       {isAdmin && (
         <NavLink
           href="/users"

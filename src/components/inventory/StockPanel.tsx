@@ -9,7 +9,7 @@ import { InventoryTable, type InventoryRow } from "@/components/inventory/Invent
 import { TablePanel } from "@/components/ui/table-panel";
 
 /**
- * 状态判定（全局唯一定义，仪表盘共用）：
+ * 状态判定（全局唯一定义，汇总页共用）：
  * - 负库存 qty < 0；低库存 minQty > 0 且 0 ≤ qty ≤ minQty；零库存 qty = 0（minQty=0 不算异常）
  * - 异常 = 负库存 ∪ 低库存（互斥，计数可相加）
  */

@@ -105,7 +105,7 @@ export function PartForm({ initial }: { initial?: PartFormValues }) {
           defaultValue={initial?.minQty ?? 0}
         />
         <p className="text-xs text-muted-foreground">
-          库存数量 ≤ 该值时预警（库存页 / 仪表盘）；0 = 不预警。寄卖件也可设置
+          库存数量 ≤ 该值时预警（库存页 / 汇总）；0 = 不预警。寄卖件也可设置
         </p>
       </div>
       <div className="flex gap-2">

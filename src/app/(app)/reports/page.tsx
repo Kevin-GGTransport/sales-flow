@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Landmark, PackageCheck, ReceiptText, TrendingUp } from "lucide-react";
 import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
+import { RecentOrdersTable, type RecentOrderRow } from "@/components/orders/RecentOrdersTable";
 import {
   CashTrendChart,
   InventoryValueChart,
@@ -15,7 +16,9 @@ import { StatCard } from "@/components/ui/stat-card";
 import { TablePanel } from "@/components/ui/table-panel";
 import { EmptyRow, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCost, formatUSD } from "@/lib/money";
+import { prisma } from "@/lib/prisma";
 import {
+  inventoryAbnormalCounts,
   inventoryReport,
   monthlyByOrderDate,
   monthlyCashByPayDate,
@@ -23,6 +26,7 @@ import {
   profitByMonth,
   profitByPart,
 } from "@/lib/reports";
+import { formatDateString } from "@/lib/validation";
 
 function sum<T>(rows: T[], field: keyof T): number {
   return rows.reduce((total, row) => {
@@ -31,18 +35,45 @@ function sum<T>(rows: T[], field: keyof T): number {
   }, 0);
 }
 
-export default async function ReportsPage({ searchParams }: PageProps<"/reports">) {
+type SummaryPageProps = {
+  searchParams: Promise<{ year?: string | string[] }>;
+};
+
+export default async function SummaryPage({ searchParams }: SummaryPageProps) {
   const sp = await searchParams;
   const currentYear = new Date().getUTCFullYear();
   const year = Number((sp.year ?? currentYear).toString()) || currentYear;
 
-  const [inventory, monthly, cash, profitMonths, profitParts, outstanding] = await Promise.all([
+  const [
+    inventory,
+    monthly,
+    cash,
+    profitMonths,
+    profitParts,
+    outstanding,
+    abnormal,
+    uninvoicedCount,
+    recentPurchases,
+    recentSales,
+  ] = await Promise.all([
     inventoryReport(),
     monthlyByOrderDate(year),
     monthlyCashByPayDate(year),
     profitByMonth(year),
     profitByPart(year),
     outstandingSummary(),
+    inventoryAbnormalCounts(),
+    prisma.saleOrder.count({ where: { status: "ACTIVE", invoiceNo: null } }),
+    prisma.purchaseOrder.findMany({
+      include: { createdBy: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.saleOrder.findMany({
+      include: { createdBy: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
   ]);
 
   const years = Array.from({ length: 3 }, (_, index) => currentYear - index);
@@ -52,17 +83,48 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
   const annualProfit = sum(profitMonths, "profit");
   const ownedRevenue = sum(profitMonths, "revenue");
   const margin = ownedRevenue > 0 ? (annualProfit / ownedRevenue) * 100 : 0;
+  const abnormalCount = abnormal.negative + abnormal.low;
+  const recentRows: RecentOrderRow[] = [
+    ...recentPurchases.map((order) => ({
+      id: order.id,
+      kind: "买入" as const,
+      href: `/purchases/${order.id}`,
+      orderNo: order.orderNo,
+      orderDate: formatDateString(order.orderDate),
+      counterparty: order.supplierName,
+      amountText: formatUSD(order.totalAmount),
+      amount: order.totalAmount.toNumber(),
+      status: order.status,
+      invoiceNo: null,
+      createdBy: order.createdBy.name,
+    })),
+    ...recentSales.map((order) => ({
+      id: order.id,
+      kind: "卖出" as const,
+      href: `/sales/${order.id}`,
+      orderNo: order.orderNo,
+      orderDate: formatDateString(order.orderDate),
+      counterparty: order.customerName,
+      amountText: formatUSD(order.totalAmount),
+      amount: order.totalAmount.toNumber(),
+      status: order.status,
+      invoiceNo: order.invoiceNo,
+      createdBy: order.createdBy.name,
+    })),
+  ]
+    .sort((a, b) => b.orderDate.localeCompare(a.orderDate))
+    .slice(0, 10);
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="统计报表"
+        title="汇总"
         meta={<span className="text-sm text-muted-foreground">{year} 年经营脉搏</span>}
         actions={
           <nav className="flex gap-2" aria-label="选择统计年份">
             {years.map((item) => (
               <Button key={item} asChild variant={item === year ? "default" : "outline"} size="sm">
-                <Link href={`/reports?year=${item}`} aria-current={item === year ? "page" : undefined}>{item}</Link>
+                <Link href={`/?year=${item}`} aria-current={item === year ? "page" : undefined}>{item}</Link>
               </Button>
             ))}
           </nav>
@@ -78,6 +140,23 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
           <StatCard label="自营毛利" value={formatUSD(annualProfit)} size="lg" tone={annualProfit < 0 ? "destructive" : "default"}>
             <p className="mt-1 text-xs text-muted-foreground">毛利率 {margin.toFixed(1)}%</p>
           </StatCard>
+        </div>
+      </section>
+
+      <section aria-labelledby="attention-title">
+        <SectionTitle id="attention-title" icon={ReceiptText}>待处理事项</SectionTitle>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <StatCard
+            label="库存异常配件（负库存 + 低库存）"
+            value={String(abnormalCount)}
+            href="/inventory?filter=abnormal"
+            tone={abnormalCount > 0 ? "destructive" : "default"}
+          />
+          <StatCard
+            label="未开票卖出单"
+            value={String(uninvoicedCount)}
+            href="/settlement?tab=invoices"
+          />
         </div>
       </section>
 
@@ -124,6 +203,10 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
           <ConsignmentInventoryTable rows={inventory.consignment} />
         </div>
       </details>
+
+      <TablePanel title="最近单据">
+        <RecentOrdersTable rows={recentRows} />
+      </TablePanel>
     </div>
   );
 }

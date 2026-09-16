@@ -230,7 +230,7 @@ export async function profitByPart(year: number): Promise<ProfitPartRow[]> {
   }));
 }
 
-/** 应收/应付余额汇总（按客户/供应商）；总额与仪表盘/销账页同源（未取整先过滤后求和） */
+/** 应收/应付余额汇总（按客户/供应商）；总额与汇总页/销账页同源（未取整先过滤后求和） */
 export async function outstandingSummary(): Promise<{
   receivables: { customerName: string; orderNo: string; due: string; orderId: string }[];
   payables: { supplierName: string; orderNo: string; due: string; orderId: string }[];
@@ -284,7 +284,7 @@ export async function outstandingSummary(): Promise<{
 }
 
 /**
- * ── SQL 聚合（仪表盘/销账页汇总用，替代全表拉取进 JS reduce）──
+ * ── SQL 聚合（汇总页/销账页使用，替代全表拉取进 JS reduce）──
  * 全程 numeric 精确；展示侧 formatUSD 再取整。
  */
 
@@ -349,7 +349,7 @@ async function purchaseDueTotal(): Promise<Prisma.Decimal> {
 
 /**
  * 应收/应付欠款总额：逐单 due = totalAmount − Σpayments，due > 0.004 过滤后
- * 对未取整值求和（历史仪表盘口径；三页同源，天然一致）。
+ * 对未取整值求和（历史汇总口径；相关页面同源，天然一致）。
  */
 export async function outstandingDueTotals(): Promise<{
   receivable: Decimal;
