@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { UrlTabs } from "@/components/ui/url-tabs";
 import { PageHeader } from "@/components/ui/page-header";
 import { SalesPanel } from "@/components/orders/SalesPanel";
 import { PurchasesPanel } from "@/components/orders/PurchasesPanel";
@@ -15,7 +14,7 @@ export default async function OrdersPage({
   return (
     <div className="space-y-4">
       <PageHeader
-        title="单据中心"
+        title={tab === "purchases" ? "买入单" : "卖出单"}
         actions={
           <Button asChild>
             <Link href={tab === "purchases" ? "/purchases/new" : "/sales/new"}>
@@ -23,14 +22,6 @@ export default async function OrdersPage({
             </Link>
           </Button>
         }
-      />
-
-      <UrlTabs
-        value={tab}
-        tabs={[
-          { value: "sales", label: "卖出单", href: "/orders?tab=sales" },
-          { value: "purchases", label: "买入单", href: "/orders?tab=purchases" },
-        ]}
       />
 
       {tab === "sales" ? <SalesPanel sp={sp} /> : <PurchasesPanel sp={sp} />}
