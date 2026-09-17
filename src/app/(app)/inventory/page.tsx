@@ -3,10 +3,8 @@ import { Button } from "@/components/ui/button";
 import { UrlTabs } from "@/components/ui/url-tabs";
 import { PageHeader } from "@/components/ui/page-header";
 import { StockPanel } from "@/components/inventory/StockPanel";
-import { CustodyPanel } from "@/components/custody/CustodyPanel";
-import { NewCustodyItemDialog } from "@/components/custody/dialogs/NewCustodyItemDialog";
 
-/** 库存：配件库存（自营 + 寄卖）/ 代保管 合并，Tab 由 ?tab= 驱动（默认配件库存） */
+/** 库存：同一套配件/库存数据，按普通与代保管类型分 Tab。 */
 export default async function InventoryPage({
   searchParams,
 }: PageProps<"/inventory">) {
@@ -17,15 +15,7 @@ export default async function InventoryPage({
     <div className="space-y-4">
       <PageHeader
         title="库存"
-        actions={
-          tab === "custody" ? (
-            <NewCustodyItemDialog />
-          ) : (
-            <Button asChild variant="secondary">
-              <Link href="/parts">管理配件</Link>
-            </Button>
-          )
-        }
+        actions={<Button asChild variant="secondary"><Link href="/parts">管理配件</Link></Button>}
       />
 
       <UrlTabs
@@ -36,7 +26,7 @@ export default async function InventoryPage({
         ]}
       />
 
-      {tab === "custody" ? <CustodyPanel sp={sp} /> : <StockPanel sp={sp} />}
+      <StockPanel sp={sp} mode={tab} />
     </div>
   );
 }

@@ -7,8 +7,8 @@ import { createPart, updatePart, type ActionResult } from "@/actions/parts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import type { PartKindValue } from "@/components/parts/PartKindBadge";
 
 export type PartFormValues = {
   id?: string;
@@ -16,7 +16,7 @@ export type PartFormValues = {
   name: string;
   brand: string;
   description: string;
-  isConsignment: boolean;
+  kind: PartKindValue;
   minQty?: number;
 };
 
@@ -80,19 +80,33 @@ export function PartForm({ initial }: { initial?: PartFormValues }) {
           rows={3}
         />
       </div>
-      <div className="flex items-center gap-3 rounded-lg border p-3">
-        <Switch
-          id="isConsignment"
-          name="isConsignment"
-          defaultChecked={initial?.isConsignment}
-        />
-        <div className="grid gap-0.5">
-          <Label htmlFor="isConsignment">寄卖件</Label>
-          <p className="text-xs text-muted-foreground">
-            寄卖件（如明治品牌）不进成本/利润体系：入库走「寄卖入库/退回」，卖出只消库存
-          </p>
+      <fieldset className="grid gap-2">
+        <legend className="text-sm font-medium">库存类型 *</legend>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {[
+            { value: "OWNED", label: "自营", hint: "正常买入、卖出和成本" },
+            { value: "CONSIGNMENT", label: "寄卖", hint: "可卖出，不计库存成本" },
+            { value: "CUSTODY", label: "代保管", hint: "可增加或消耗库存，不可买卖" },
+          ].map((option) => (
+            <label
+              key={option.value}
+              className="has-[:checked]:border-primary has-[:checked]:bg-primary/5 flex cursor-pointer gap-2 rounded-lg border p-3 transition-colors"
+            >
+              <input
+                type="radio"
+                name="kind"
+                value={option.value}
+                defaultChecked={(initial?.kind ?? "OWNED") === option.value}
+                className="mt-0.5 accent-primary"
+              />
+              <span className="grid gap-0.5">
+                <span className="text-sm font-medium">{option.label}</span>
+                <span className="text-xs text-muted-foreground">{option.hint}</span>
+              </span>
+            </label>
+          ))}
         </div>
-      </div>
+      </fieldset>
       <div className="grid gap-2">
         <Label htmlFor="minQty">安全库存阈值</Label>
         <Input
@@ -105,7 +119,7 @@ export function PartForm({ initial }: { initial?: PartFormValues }) {
           defaultValue={initial?.minQty ?? 0}
         />
         <p className="text-xs text-muted-foreground">
-          库存数量 ≤ 该值时预警（库存页 / 汇总）；0 = 不预警。寄卖件也可设置
+          库存数量 ≤ 该值时预警（库存页 / 汇总）；0 = 不预警
         </p>
       </div>
       <div className="flex gap-2">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Landmark, PackageCheck, ReceiptText, TrendingUp } from "lucide-react";
-import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
+import { PartKindBadge } from "@/components/parts/PartKindBadge";
 import { RecentOrdersTable, type RecentOrderRow } from "@/components/orders/RecentOrdersTable";
 import {
   CashTrendChart,
@@ -290,7 +290,7 @@ function ConsignmentInventoryTable({ rows }: { rows: InventoryRows }) {
             <TableRow key={row.partId}>
               <TableCell><PartLink id={row.partId}>{row.partNumber}</PartLink></TableCell>
               <TableCell>{row.name}</TableCell>
-              <TableCell><ConsignmentBadge isConsignment /></TableCell>
+              <TableCell><PartKindBadge kind="CONSIGNMENT" /></TableCell>
               <TableCell className="text-right">{row.qty}</TableCell>
             </TableRow>
           ))}

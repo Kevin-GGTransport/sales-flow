@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { PartOption } from "@/components/parts/PartPicker";
 
 /** 录单时 inline 快速新建配件，成功后回填到行 */
@@ -44,7 +43,7 @@ export function PartQuickAddDialog({
       partNumber: String(formData.get("partNumber") ?? ""),
       name: String(formData.get("name") ?? ""),
       brand: String(formData.get("brand") ?? "") || null,
-      isConsignment: formData.get("isConsignment") === "on",
+      kind: String(formData.get("kind") ?? "OWNED") as "OWNED" | "CONSIGNMENT",
       qty: 0,
     });
     setOpen(false);
@@ -78,9 +77,17 @@ export function PartQuickAddDialog({
             <Input id="qa-brand" name="brand" />
           </div>
           {showConsignmentSwitch && (
-            <div className="flex items-center gap-3">
-              <Switch id="qa-isConsignment" name="isConsignment" />
-              <Label htmlFor="qa-isConsignment">寄卖件（不算成本利润）</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="qa-kind">库存类型</Label>
+              <select
+                id="qa-kind"
+                name="kind"
+                defaultValue="OWNED"
+                className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
+              >
+                <option value="OWNED">自营</option>
+                <option value="CONSIGNMENT">寄卖（不算成本利润）</option>
+              </select>
             </div>
           )}
           <Button type="submit" disabled={pending}>

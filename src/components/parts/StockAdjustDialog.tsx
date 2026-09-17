@@ -28,12 +28,12 @@ import { Label } from "@/components/ui/label";
 export function StockAdjustDialog({
   partId,
   partNumber,
-  isConsignment,
+  kind,
   compact = false,
 }: {
   partId: string;
   partNumber: string;
-  isConsignment: boolean;
+  kind: "OWNED" | "CONSIGNMENT" | "CUSTODY";
   compact?: boolean;
 }) {
   const router = useRouter();
@@ -42,7 +42,7 @@ export function StockAdjustDialog({
   const [, startTransition] = useTransition();
   const today = todayISO();
 
-  const copy = isConsignment
+  const copy = kind === "CONSIGNMENT"
     ? {
         button: compact ? "调整" : "寄卖入库/退回",
         title: `寄卖入库 / 退回（${partNumber}）`,
@@ -52,7 +52,17 @@ export function StockAdjustDialog({
         toast: (qty: number) =>
           qty > 0 ? `已寄卖入库 ${qty} 件` : `已退回 ${-qty} 件`,
       }
-    : {
+    : kind === "CUSTODY"
+      ? {
+          button: compact ? "增减" : "增加/消耗代保管库存",
+          title: `增加 / 消耗库存（${partNumber}）`,
+          description: "只记数量不记成本。正数 = 增加库存；负数 = 消耗库存，不能扣成负数。",
+          qtyLabel: "数量（消耗用负数，如 -3）*",
+          reasonPlaceholder: "如 收到 10 件 / 领用 3 件",
+          toast: (qty: number) =>
+            qty > 0 ? `已增加 ${qty} 件` : `已消耗 ${-qty} 件`,
+        }
+      : {
         button: compact ? "盘点" : "库存调整（盘盈/盘亏）",
         title: `盘盈 / 盘亏（${partNumber}）`,
         description:
@@ -61,7 +71,7 @@ export function StockAdjustDialog({
         reasonPlaceholder: "如 月末盘点差异",
         toast: (qty: number) =>
           qty > 0 ? `已盘盈 ${qty} 件` : `已盘亏 ${-qty} 件`,
-      };
+        };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -109,7 +119,7 @@ export function StockAdjustDialog({
               id="adj-qty"
               name="qty"
               inputMode="numeric"
-              placeholder={isConsignment ? "如 10 或 -3" : "如 3 或 -2"}
+              placeholder={kind === "OWNED" ? "如 3 或 -2" : "如 10 或 -3"}
               required
             />
           </div>

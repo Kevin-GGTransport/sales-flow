@@ -28,9 +28,12 @@ type FilterKey = (typeof FILTERS)[number]["key"];
 /** 库存 · 配件库存 Tab（原 /inventory 主体搬迁；默认 Tab，筛选提交无需保 tab） */
 export async function StockPanel({
   sp,
+  mode = "stock",
 }: {
   sp: Record<string, string | string[] | undefined>;
+  mode?: "stock" | "custody";
 }) {
+  const custodyOnly = mode === "custody";
   const [session, keyword, filterParam] = [
     await auth(),
     ((sp.q ?? "").toString()).trim(),
@@ -43,6 +46,7 @@ export async function StockPanel({
   const parts = await prisma.part.findMany({
     where: {
       isActive: true,
+      kind: custodyOnly ? "CUSTODY" : { not: "CUSTODY" },
       ...(keyword
         ? {
             OR: [
@@ -59,17 +63,18 @@ export async function StockPanel({
   const rows: InventoryRow[] = parts.map((p) => {
     const qty = p.inventory?.qty ?? 0;
     const avg = p.inventory?.avgCost ?? null;
-    const value = p.isConsignment ? null : avg ? avg.mul(qty) : null;
+    const hasCost = p.kind === "OWNED";
+    const value = hasCost && avg ? avg.mul(qty) : null;
     return {
       id: p.id,
       partNumber: p.partNumber,
       name: p.name,
-      isConsignment: p.isConsignment,
+      kind: p.kind,
       minQty: p.minQty,
       qty,
-      avgText: p.isConsignment ? "-" : formatUSD(avg),
-      avg: p.isConsignment ? null : avg ? avg.toNumber() : null,
-      valueText: p.isConsignment ? "-" : formatUSD(value),
+      avgText: hasCost ? formatUSD(avg) : "-",
+      avg: hasCost && avg ? avg.toNumber() : null,
+      valueText: hasCost ? formatUSD(value) : "-",
       value: value ? value.toNumber() : null,
       status: qty < 0 ? "negative" : p.minQty > 0 && qty <= p.minQty ? "low" : "normal",
     };
@@ -77,7 +82,7 @@ export async function StockPanel({
 
   // 汇总基于当前搜索结果（未筛选）全集
   const ownedValue = rows
-    .filter((r) => !r.isConsignment)
+    .filter((r) => r.kind === "OWNED")
     .reduce((s, r) => s.add(r.value ?? new Decimal(0)), new Decimal(0))
     .toDecimalPlaces(2);
   const negativeCount = rows.filter((r) => r.qty < 0).length;
@@ -94,9 +99,9 @@ export async function StockPanel({
       case "zero":
         return r.qty === 0;
       case "consignment":
-        return r.isConsignment;
+        return r.kind === "CONSIGNMENT";
       case "owned":
-        return !r.isConsignment;
+        return r.kind === "OWNED";
       default:
         return true;
     }
@@ -114,7 +119,11 @@ export async function StockPanel({
     return s ? `/inventory?${s}` : "/inventory";
   };
 
-  const summary = [
+  const summary = custodyOnly ? [
+    { label: "代保管品类", value: String(rows.length), danger: false },
+    { label: "代保管总件数", value: String(rows.reduce((sum, row) => sum + row.qty, 0)), danger: false },
+    { label: "零库存品类", value: String(rows.filter((row) => row.qty === 0).length), danger: false },
+  ] : [
     { label: "自营库存总价值", value: formatUSD(ownedValue), danger: false },
     { label: "配件总数（自营 + 寄卖）", value: String(rows.length), danger: false },
     { label: "负库存配件", value: String(negativeCount), danger: negativeCount > 0 },
@@ -128,7 +137,7 @@ export async function StockPanel({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className={`grid gap-4 sm:grid-cols-2 ${custodyOnly ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
         {summary.map((s) => (
           <StatCard
             key={s.label}
@@ -139,7 +148,7 @@ export async function StockPanel({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
+      {!custodyOnly && <div className="flex flex-wrap items-center gap-1.5">
         {FILTERS.map((f) => (
           <Link
             key={f.key}
@@ -153,9 +162,9 @@ export async function StockPanel({
             {f.label}
           </Link>
         ))}
-      </div>
+      </div>}
 
-      <ListFilterForm hidden={{ filter }} submitLabel="搜索">
+      <ListFilterForm hidden={custodyOnly ? { tab: "custody" } : { filter }} submitLabel="搜索">
         <Input name="q" defaultValue={keyword} placeholder="搜索配件号 / 名称 / 品牌" className="w-72" />
       </ListFilterForm>
 
@@ -163,6 +172,7 @@ export async function StockPanel({
         <InventoryTable
           rows={filtered}
           isAdmin={isAdmin(session)}
+          custodyOnly={custodyOnly}
           empty={keyword ? "没有匹配的配件" : undefined}
         />
       </TablePanel>

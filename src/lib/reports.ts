@@ -7,7 +7,7 @@ export type InventoryReportRow = {
   partId: string;
   partNumber: string;
   name: string;
-  isConsignment: boolean;
+  kind: "OWNED" | "CONSIGNMENT";
   qty: number;
   avgCost: string;
   value: string;
@@ -20,7 +20,7 @@ export async function inventoryReport(): Promise<{
   ownedTotalValue: string;
 }> {
   const parts = await prisma.part.findMany({
-    where: { isActive: true },
+    where: { isActive: true, kind: { not: "CUSTODY" } },
     include: { inventory: true },
     orderBy: { partNumber: "asc" },
   });
@@ -33,15 +33,15 @@ export async function inventoryReport(): Promise<{
       partId: p.id,
       partNumber: p.partNumber,
       name: p.name,
-      isConsignment: p.isConsignment,
+      kind: p.kind as "OWNED" | "CONSIGNMENT",
       qty,
       avgCost: avg.toDecimalPlaces(4).toString(),
       value: value.toString(),
     };
   };
 
-  const owned = parts.filter((p) => !p.isConsignment).map(toRow);
-  const consignment = parts.filter((p) => p.isConsignment).map(toRow);
+  const owned = parts.filter((p) => p.kind === "OWNED").map(toRow);
+  const consignment = parts.filter((p) => p.kind === "CONSIGNMENT").map(toRow);
   const ownedTotalValue = owned
     .reduce((s, r) => s.add(new Decimal(r.value)), new Decimal(0))
     .toString();

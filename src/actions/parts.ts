@@ -15,7 +15,7 @@ function parseForm(formData: FormData) {
     name: formData.get("name") ?? "",
     brand: formData.get("brand") ?? "",
     description: formData.get("description") ?? "",
-    isConsignment: formData.get("isConsignment"),
+    kind: formData.get("kind") ?? "OWNED",
     minQty: formData.get("minQty") ?? "",
   });
 }
@@ -61,6 +61,23 @@ export async function updatePart(
       return { ok: false, error: parsed.error.issues[0]?.message ?? "表单校验失败" };
     }
     const { brand, ...rest } = parsed.data;
+    const current = await prisma.part.findUnique({
+      where: { id },
+      select: {
+        kind: true,
+        _count: { select: { purchaseLines: true, saleLines: true } },
+      },
+    });
+    if (!current) return { ok: false, error: "配件不存在" };
+    if (
+      rest.kind !== current.kind &&
+      current._count.purchaseLines + current._count.saleLines > 0
+    ) {
+      return {
+        ok: false,
+        error: "已有买入或卖出记录的配件不能更改库存类型",
+      };
+    }
     await prisma.part.update({
       where: { id },
       data: { ...rest, brand: brand || null },

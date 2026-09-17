@@ -59,14 +59,14 @@ type ReplayEvent = {
 export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
   const part = await tx.part.findUnique({
     where: { id: partId },
-    select: { isConsignment: true },
+    select: { kind: true },
   });
   if (!part) return;
 
   const events: ReplayEvent[] = [];
   let seq = 0;
 
-  if (!part.isConsignment) {
+  if (part.kind === "OWNED") {
     const purchaseLines = await tx.purchaseOrderLine.findMany({
       where: { partId, order: { status: "ACTIVE" } },
       select: { qty: true, unitPrice: true, order: { select: { orderDate: true, createdAt: true } } },
@@ -83,18 +83,20 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
     }
   }
 
-  const saleLines = await tx.saleOrderLine.findMany({
-    where: { partId, order: { status: "ACTIVE" } },
-    select: { qty: true, order: { select: { orderDate: true, createdAt: true } } },
-  });
-  for (const line of saleLines) {
-    events.push({
-      date: line.order.orderDate,
-      createdAt: line.order.createdAt,
-      seq: seq++,
-      kind: "OUT",
-      qty: line.qty,
+  if (part.kind !== "CUSTODY") {
+    const saleLines = await tx.saleOrderLine.findMany({
+      where: { partId, order: { status: "ACTIVE" } },
+      select: { qty: true, order: { select: { orderDate: true, createdAt: true } } },
     });
+    for (const line of saleLines) {
+      events.push({
+        date: line.order.orderDate,
+        createdAt: line.order.createdAt,
+        seq: seq++,
+        kind: "OUT",
+        qty: line.qty,
+      });
+    }
   }
 
   // 库存调整（寄卖入库/退回、自营盘盈/盘亏）：一律 qty-only 回放，
@@ -123,8 +125,8 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
 
   let state: InventoryState = ZERO_STATE();
   for (const ev of events) {
-    if (part.isConsignment) {
-      // 寄卖件：只动数量，无成本体系
+    if (part.kind !== "OWNED") {
+      // 寄卖/代保管：只动数量，无成本体系
       state = {
         qty: state.qty + (ev.kind === "IN" ? ev.qty : -ev.qty),
         avgCost: state.avgCost,

@@ -45,11 +45,14 @@ export async function createSaleOrder(
       const partIds = input.lines.map((l) => l.partId);
       const parts = await tx.part.findMany({
         where: { id: { in: partIds } },
-        select: { id: true, isConsignment: true },
+        select: { id: true, kind: true },
       });
       const partMap = new Map(parts.map((p) => [p.id, p]));
       if (input.lines.some((l) => !partMap.has(l.partId))) {
         return { error: "存在无效配件，请重新选择" };
+      }
+      if (input.lines.some((l) => partMap.get(l.partId)?.kind === "CUSTODY")) {
+        return { error: "代保管配件不能卖出" };
       }
 
       const invMap = await lockInventoryRows(tx, partIds);
@@ -72,7 +75,8 @@ export async function createSaleOrder(
 
         const state = invMap.get(line.partId) ?? { qty: 0, avgCost: new Decimal(0) };
         // 成本快照：寄卖行=0；自营行=卖出当时的加权平均成本（永不追溯重算）
-        const costAtSale = part.isConsignment
+        const isConsignment = part.kind === "CONSIGNMENT";
+        const costAtSale = isConsignment
           ? new Decimal(0)
           : round4(state.avgCost);
         const costTotal = lineTotalOf(line.qty, costAtSale);
@@ -84,7 +88,7 @@ export async function createSaleOrder(
           qty: line.qty,
           unitPrice: price,
           lineTotal,
-          isConsignment: part.isConsignment,
+          isConsignment,
           costAtSale,
           costTotal,
         };

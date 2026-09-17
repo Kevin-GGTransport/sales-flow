@@ -38,17 +38,18 @@ export default async function PartsPage({
   const rows: PartRow[] = parts.map((p) => {
     const qty = p.inventory?.qty ?? 0;
     const avg = p.inventory?.avgCost ?? null;
-    const value = p.isConsignment ? null : avg ? avg.mul(qty) : null;
+    const hasCost = p.kind === "OWNED";
+    const value = hasCost && avg ? avg.mul(qty) : null;
     return {
       id: p.id,
       partNumber: p.partNumber,
       name: p.name,
       brand: p.brand,
-      isConsignment: p.isConsignment,
+      kind: p.kind,
       qty,
-      avgText: p.isConsignment ? "-" : formatUSD(avg),
-      avg: p.isConsignment ? null : avg ? avg.toNumber() : null,
-      valueText: p.isConsignment ? "-" : formatUSD(value),
+      avgText: hasCost ? formatUSD(avg) : "-",
+      avg: hasCost && avg ? avg.toNumber() : null,
+      valueText: hasCost ? formatUSD(value) : "-",
       value: value ? value.toNumber() : null,
       isActive: p.isActive,
     };

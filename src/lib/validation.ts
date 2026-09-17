@@ -6,18 +6,12 @@ export const moneyString = z
   .trim()
   .regex(/^\d+(\.\d{1,2})?$/, "金额须为非负数字，最多两位小数");
 
-/** 复选框：FormData 的 "on"/"true" → true，缺省 → false */
-export const checkbox = z.preprocess(
-  (v) => v === "on" || v === "true" || v === true,
-  z.boolean(),
-);
-
 export const partSchema = z.object({
   partNumber: z.string().trim().min(1, "配件号必填").max(64, "配件号过长"),
   name: z.string().trim().min(1, "名称必填").max(200, "名称过长"),
   brand: z.string().trim().max(100, "品牌过长"),
   description: z.string().trim().max(500, "备注过长"),
-  isConsignment: checkbox,
+  kind: z.enum(["OWNED", "CONSIGNMENT", "CUSTODY"]),
   // 安全库存阈值：空值/缺省 → 0（不预警）
   minQty: z.preprocess(
     (v) => (v === "" || v == null ? 0 : Number(v)),
@@ -109,4 +103,3 @@ export function parseLinesFromForm(formData: FormData): unknown {
     return [{ partId: "", qty: 0, unitPrice: "x" }]; // 触发 zod 报错
   }
 }
-

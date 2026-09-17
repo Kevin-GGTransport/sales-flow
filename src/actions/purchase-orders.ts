@@ -45,21 +45,21 @@ export async function createPurchaseOrder(
     const orderDate = dateToUtcMidnight(input.orderDate);
 
     const result = await withTxRetry<TxResult>(async (tx) => {
-      // 买入单禁选寄卖件（寄卖件入库走「寄卖入库/退回」，不进成本体系）
+      // 买入单只允许自营配件；寄卖/代保管走库存调整。
       const partIds = input.lines.map((l) => l.partId);
       const parts = await tx.part.findMany({
         where: { id: { in: partIds } },
-        select: { id: true, isConsignment: true, partNumber: true },
+        select: { id: true, kind: true, partNumber: true },
       });
       const partMap = new Map(parts.map((p) => [p.id, p]));
       if (input.lines.some((l) => !partMap.has(l.partId))) {
         return { ok: false, error: "存在无效配件，请重新选择" };
       }
-      const consignment = input.lines.find((l) => partMap.get(l.partId)?.isConsignment);
-      if (consignment) {
+      const external = input.lines.find((l) => partMap.get(l.partId)?.kind !== "OWNED");
+      if (external) {
         return {
           ok: false,
-          error: `寄卖件（${partMap.get(consignment.partId)?.partNumber}）不能走买入单，请用「寄卖入库」`,
+          error: `非自营配件（${partMap.get(external.partId)?.partNumber}）不能走买入单`,
         };
       }
 

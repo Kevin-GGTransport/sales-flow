@@ -23,6 +23,12 @@ enum PaymentMethod {
   ONLINE
 }
 
+enum PartKind {
+  OWNED
+  CONSIGNMENT
+  CUSTODY
+}
+
 model User {
   id           String   @id @default(cuid())
   username     String   @unique
@@ -33,34 +39,33 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  createdPurchases  PurchaseOrder[] @relation("PurchaseCreator")
-  createdSales      SaleOrder[]     @relation("SaleCreator")
-  voidedPurchases   PurchaseOrder[] @relation("PurchaseVoider")
-  voidedSales       SaleOrder[]     @relation("SaleVoider")
-  invoicedSales     SaleOrder[]     @relation("InvoiceIssuer")
-  payments          Payment[]
-  stockAdjustments  StockAdjustment[]
-  custodyMovements  CustodyMovement[]
+  createdPurchases PurchaseOrder[]   @relation("PurchaseCreator")
+  createdSales     SaleOrder[]       @relation("SaleCreator")
+  voidedPurchases  PurchaseOrder[]   @relation("PurchaseVoider")
+  voidedSales      SaleOrder[]       @relation("SaleVoider")
+  invoicedSales    SaleOrder[]       @relation("InvoiceIssuer")
+  payments         Payment[]
+  stockAdjustments StockAdjustment[]
 }
 
 model Part {
-  id            String   @id @default(cuid())
-  partNumber    String   @unique
-  name          String
-  brand         String? // 品牌；明治 → 寄卖
-  description   String? // 规格 / 适配车型备注
-  isConsignment Boolean  @default(false) // 寄卖件：不进成本/利润体系，入库走库存调整
-  minQty        Int      @default(0) // 安全库存阈值：>0 时 qty≤该值触发低库存预警；0=不预警
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(cuid())
+  partNumber  String   @unique
+  name        String
+  brand       String? // 品牌；明治 → 寄卖
+  description String? // 规格 / 适配车型备注
+  kind        PartKind @default(OWNED) // 自营 / 寄卖 / 代保管（单选，避免状态冲突）
+  minQty      Int      @default(0) // 安全库存阈值：>0 时 qty≤该值触发低库存预警；0=不预警
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   inventory     Inventory?
   purchaseLines PurchaseOrderLine[]
   saleLines     SaleOrderLine[]
   adjustments   StockAdjustment[]
 
-  @@index([isConsignment])
+  @@index([kind])
   @@index([name])
 }
 
@@ -184,7 +189,7 @@ model Payment {
   @@index([purchaseOrderId])
 }
 
-// 库存调整：寄卖件入库/退回（STAFF）；自营件盘盈/盘亏（ADMIN）。
+// 库存调整：寄卖/代保管入库退回（STAFF）；自营件盘盈/盘亏（ADMIN）。
 // 只动数量不记钱，重放中一律为 qty-only 事件（不动 avgCost；盘盈成本基础视为 0）
 model StockAdjustment {
   id          String   @id @default(cuid())
@@ -199,37 +204,4 @@ model StockAdjustment {
 
   @@index([partId])
   @@index([adjDate])
-}
-
-// 代保管：别家存放在我们仓库的货（只记数量与归属，不进成本/库存价值/报表，不可卖出）
-model CustodyItem {
-  id         String            @id @default(cuid())
-  ownerName  String // 货主（哪家）
-  partNumber String
-  partName   String
-  note       String?
-  qty        Int               @default(0) // 纯保管不允许负（退回 ≤ 现存）
-  isActive   Boolean           @default(true)
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  movements  CustodyMovement[]
-
-  @@unique([ownerName, partNumber]) // 同货主同配件号只一条，重复入库走 movement
-  @@index([ownerName])
-}
-
-// 代保管出入流水（+ 入库 / − 退回，留痕）
-model CustodyMovement {
-  id            String      @id @default(cuid())
-  custodyItemId String
-  custodyItem   CustodyItem @relation(fields: [custodyItemId], references: [id])
-  qty           Int // + 入库 / − 退回
-  reason        String?
-  moveDate      DateTime
-  createdById   String
-  createdBy     User        @relation(fields: [createdById], references: [id])
-  createdAt     DateTime    @default(now())
-
-  @@index([custodyItemId])
-  @@index([moveDate])
 }

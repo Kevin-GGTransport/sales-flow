@@ -84,7 +84,7 @@ export function OrderLineEditor({
                 onChange={(partId) => update(row.key, { partId })}
                 allowConsignment={allowConsignment}
               />
-              {part?.isConsignment && allowConsignment && (
+              {part?.kind === "CONSIGNMENT" && allowConsignment && (
                 <Badge variant="outline">寄卖 · 卖出只消库存</Badge>
               )}
             </div>

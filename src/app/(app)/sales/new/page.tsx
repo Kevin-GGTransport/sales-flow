@@ -11,13 +11,13 @@ export default async function NewSalePage({
   // 配件清单与「复制重开」来源单互不依赖，并行取
   const [partRows, src] = await Promise.all([
     prisma.part.findMany({
-      where: { isActive: true },
+      where: { isActive: true, kind: { not: "CUSTODY" } },
       select: {
         id: true,
         partNumber: true,
         name: true,
         brand: true,
-        isConsignment: true,
+        kind: true,
         inventory: { select: { qty: true } },
       },
       orderBy: { partNumber: "asc" },

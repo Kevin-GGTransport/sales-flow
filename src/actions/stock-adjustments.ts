@@ -9,7 +9,8 @@ import type { ActionResult } from "@/actions/parts";
 
 /**
  * 库存调整：只动数量不记钱，重放中为 qty-only 事件（不动 avgCost）。
- * - 寄卖件（如明治）：STAFF 可用。qty > 0 = 寄卖入库；qty < 0 = 退回寄卖方。
+ * - 寄卖：STAFF 可用。qty > 0 = 入库；qty < 0 = 退回。
+ * - 代保管：STAFF 可用。qty > 0 = 增加；qty < 0 = 消耗。
  * - 自营件：仅 ADMIN（盘盈/盘亏）。盘盈成本基础视为 0——不是采购不进加权平均，
  *   avgCost 与库存单位成本不变；盘亏只核销数量。正常进货请用买入单。
  */
@@ -27,15 +28,18 @@ export async function addStockAdjustment(input: {
 
     const part = await prisma.part.findUnique({
       where: { id: input.partId },
-      select: { isConsignment: true },
+      select: { kind: true },
     });
     if (!part) return { ok: false, error: "配件不存在" };
 
-    // 寄卖调整人人可用；自营件盘盈/盘亏仅管理员
-    const user = part.isConsignment ? await requireUser() : await requireAdmin();
+    // 寄卖/代保管调整人人可用；自营件盘盈/盘亏仅管理员
+    const user = part.kind === "OWNED" ? await requireAdmin() : await requireUser();
 
     await withTxRetry(async (tx) => {
-      await lockInventoryRows(tx, [input.partId]);
+      const current = await lockInventoryRows(tx, [input.partId]);
+      if (part.kind === "CUSTODY" && (current.get(input.partId)?.qty ?? 0) + qty < 0) {
+        throw new Error("消耗数量不能超过当前代保管库存");
+      }
       await tx.stockAdjustment.create({
         data: {
           partId: input.partId,

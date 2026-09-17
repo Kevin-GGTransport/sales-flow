@@ -5,7 +5,7 @@ import { formatUSD } from "@/lib/money";
 import { formatDateString } from "@/lib/validation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
+import { PartKindBadge } from "@/components/parts/PartKindBadge";
 import { StatCard } from "@/components/ui/stat-card";
 import { TablePanel } from "@/components/ui/table-panel";
 import { PageHeader } from "@/components/ui/page-header";
@@ -61,7 +61,7 @@ export default async function PartDetailPage({
   const qty = part.inventory?.qty ?? 0;
   const avg = part.inventory?.avgCost ?? null;
   const lowStock = part.minQty > 0 && qty >= 0 && qty <= part.minQty;
-  const adjLabel = part.isConsignment ? "寄卖调整" : "库存调整";
+  const adjLabel = part.kind === "CONSIGNMENT" ? "寄卖调整" : part.kind === "CUSTODY" ? "代保管增减" : "库存调整";
 
   const history: HistoryRow[] = [
     ...part.purchaseLines.map((l) => ({
@@ -106,17 +106,17 @@ export default async function PartDetailPage({
         back={{ href: "/parts", label: "← 配件" }}
         meta={
           <>
-            <ConsignmentBadge isConsignment={part.isConsignment} />
+            <PartKindBadge kind={part.kind} />
             {!part.isActive && <Badge variant="destructive">已停用</Badge>}
           </>
         }
         actions={
           <div className="flex gap-2">
-            {(part.isConsignment || isAdminFlag) && (
+            {(part.kind !== "OWNED" || isAdminFlag) && (
               <StockAdjustDialog
                 partId={part.id}
                 partNumber={part.partNumber}
-                isConsignment={part.isConsignment}
+                kind={part.kind}
               />
             )}
             <EditPartDialog
@@ -126,7 +126,7 @@ export default async function PartDetailPage({
                 name: part.name,
                 brand: part.brand ?? "",
                 description: part.description ?? "",
-                isConsignment: part.isConsignment,
+                kind: part.kind,
                 minQty: part.minQty,
               }}
             />
@@ -151,14 +151,14 @@ export default async function PartDetailPage({
         </StatCard>
         <StatCard
           label="平均成本"
-          value={part.isConsignment ? "-" : formatUSD(avg)}
+          value={part.kind === "OWNED" ? formatUSD(avg) : "-"}
           size="lg"
           labelSize="sm"
           mono={false}
         />
         <StatCard
           label="库存价值"
-          value={part.isConsignment ? "-" : formatUSD(avg ? avg.mul(qty) : null)}
+          value={part.kind === "OWNED" ? formatUSD(avg ? avg.mul(qty) : null) : "-"}
           size="lg"
           labelSize="sm"
           mono={false}

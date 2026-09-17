@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
+import { PartKindBadge, type PartKindValue } from "@/components/parts/PartKindBadge";
 import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
 
 export type PartRow = {
@@ -9,7 +9,7 @@ export type PartRow = {
   partNumber: string;
   name: string;
   brand: string | null;
-  isConsignment: boolean;
+  kind: PartKindValue;
   qty: number;
   avgText: string;
   avg: number | null;
@@ -44,8 +44,8 @@ const columns: DataTableColumn<PartRow>[] = [
       key: "type",
       header: "类型",
       card: "badge",
-      sortValue: (r) => (r.isConsignment ? "寄卖" : "自营"),
-      cell: (r) => <ConsignmentBadge isConsignment={r.isConsignment} />,
+      sortValue: (r) => r.kind,
+      cell: (r) => <PartKindBadge kind={r.kind} />,
     },
     {
       key: "qty",

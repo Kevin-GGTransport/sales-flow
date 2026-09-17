@@ -17,13 +17,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import type { PartKindValue } from "@/components/parts/PartKindBadge";
 
 export type PartOption = {
   id: string;
   partNumber: string;
   name: string;
   brand?: string | null;
-  isConsignment: boolean;
+  kind: PartKindValue;
   qty: number;
 };
 
@@ -56,7 +57,7 @@ export function PartPicker({
             <span className="flex min-w-0 items-center gap-1.5">
               <span className="truncate">{selected.partNumber}</span>
               <span className="truncate text-muted-foreground">{selected.name}</span>
-              {selected.isConsignment && <Badge variant="outline">寄卖</Badge>}
+              {selected.kind === "CONSIGNMENT" && <Badge variant="outline">寄卖</Badge>}
             </span>
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
@@ -71,7 +72,8 @@ export function PartPicker({
             <CommandEmpty>没有匹配的配件</CommandEmpty>
             <CommandGroup>
               {parts.map((part) => {
-                const disabled = part.isConsignment && !allowConsignment;
+                const disabled = part.kind === "CUSTODY" ||
+                  (part.kind === "CONSIGNMENT" && !allowConsignment);
                 return (
                   <CommandItem
                     key={part.id}
@@ -84,12 +86,15 @@ export function PartPicker({
                   >
                     <span className="font-medium">{part.partNumber}</span>
                     <span className="truncate text-muted-foreground">{part.name}</span>
-                    {part.isConsignment && (
+                    {part.kind === "CONSIGNMENT" && (
                       <Badge variant="outline" className="ml-auto">
                         {disabled ? "寄卖·不可买入" : "寄卖"}
                       </Badge>
                     )}
-                    {!part.isConsignment && (
+                    {part.kind === "CUSTODY" && (
+                      <Badge variant="outline" className="ml-auto">代保管·不可买卖</Badge>
+                    )}
+                    {part.kind === "OWNED" && (
                       <span className="ml-auto text-xs text-muted-foreground">
                         库存 {part.qty}
                       </span>

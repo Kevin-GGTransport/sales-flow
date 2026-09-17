@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { ConsignmentBadge } from "@/components/parts/ConsignmentBadge";
+import { PartKindBadge, type PartKindValue } from "@/components/parts/PartKindBadge";
 import { StockAdjustDialog } from "@/components/parts/StockAdjustDialog";
 import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
 
@@ -11,7 +11,7 @@ export type InventoryRow = {
   id: string;
   partNumber: string;
   name: string;
-  isConsignment: boolean;
+  kind: PartKindValue;
   minQty: number;
   qty: number;
   avgText: string;
@@ -23,8 +23,8 @@ export type InventoryRow = {
 
 // 列工厂闭包 isAdmin（自营盘盈亏仅 ADMIN 行内可见；寄卖调整 STAFF 也可），
 // 组件内 useMemo 包裹保持引用稳定（DataTable 的 useMemo 依赖它）——同 PaymentsTables 先例
-function createColumns(isAdmin: boolean): DataTableColumn<InventoryRow>[] {
-  return [
+function createColumns(isAdmin: boolean, custodyOnly: boolean): DataTableColumn<InventoryRow>[] {
+  const columns: DataTableColumn<InventoryRow>[] = [
     {
       key: "partNumber",
       header: "配件号",
@@ -43,8 +43,8 @@ function createColumns(isAdmin: boolean): DataTableColumn<InventoryRow>[] {
       key: "type",
       header: "类型",
       card: "badge",
-      sortValue: (r) => (r.isConsignment ? "寄卖" : "自营"),
-      cell: (r) => <ConsignmentBadge isConsignment={r.isConsignment} />,
+      sortValue: (r) => r.kind,
+      cell: (r) => <PartKindBadge kind={r.kind} />,
     },
     {
       key: "qty",
@@ -100,35 +100,43 @@ function createColumns(isAdmin: boolean): DataTableColumn<InventoryRow>[] {
       header: "操作",
       className: "w-0",
       cell: (r) =>
-        r.isConsignment || isAdmin ? (
+        r.kind !== "OWNED" || isAdmin ? (
           <StockAdjustDialog
             partId={r.id}
             partNumber={r.partNumber}
-            isConsignment={r.isConsignment}
+            kind={r.kind}
             compact
           />
         ) : null,
     },
   ];
+  return custodyOnly
+    ? columns.filter((column) => !["type", "minQty", "avg", "value"].includes(column.key))
+    : columns;
 }
 
 export function InventoryTable({
   rows,
   isAdmin = false,
+  custodyOnly = false,
   empty,
 }: {
   rows: InventoryRow[];
   isAdmin?: boolean;
+  custodyOnly?: boolean;
   empty?: React.ReactNode;
 }) {
-  const columns = useMemo(() => createColumns(isAdmin), [isAdmin]);
+  const columns = useMemo(
+    () => createColumns(isAdmin, custodyOnly),
+    [isAdmin, custodyOnly],
+  );
   return (
     <DataTable
       columns={columns}
       rows={rows}
       rowKey={(r) => r.id}
       empty={empty ?? "还没有库存数据"}
-      initialSort={{ key: "value", dir: "desc" }}
+      initialSort={custodyOnly ? { key: "partNumber", dir: "asc" } : { key: "value", dir: "desc" }}
     />
   );
 }
