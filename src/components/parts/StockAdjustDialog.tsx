@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowDownUp } from "lucide-react";
 import { addStockAdjustment } from "@/actions/stock-adjustments";
@@ -36,10 +35,8 @@ export function StockAdjustDialog({
   kind: "OWNED" | "CONSIGNMENT" | "CUSTODY";
   compact?: boolean;
 }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
-  const [, startTransition] = useTransition();
   const today = todayISO();
 
   const copy = kind === "CONSIGNMENT"
@@ -91,7 +88,6 @@ export function StockAdjustDialog({
     }
     toast.success(copy.toast(qty));
     setOpen(false);
-    startTransition(() => router.refresh());
   }
 
   return (

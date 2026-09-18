@@ -34,7 +34,6 @@ export function PartForm({ initial }: { initial?: PartFormValues }) {
     if (state.ok) {
       toast.success(isEdit ? "已保存" : "配件已创建");
       if (!isEdit && state.id) router.push(`/parts/${state.id}`);
-      else router.refresh();
     } else {
       toast.error(state.error);
     }

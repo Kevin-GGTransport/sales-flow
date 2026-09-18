@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,10 +27,9 @@ export function VoidOrderDialog({
   disabled?: boolean;
   disabledReason?: string;
 }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
 
   async function handleVoid() {
     if (!reason.trim()) {
@@ -40,17 +38,18 @@ export function VoidOrderDialog({
     }
     const { voidPurchaseOrder } = await import("@/actions/purchase-orders");
     const { voidSaleOrder } = await import("@/actions/sale-orders");
+    setPending(true);
     const result =
       kind === "purchase"
         ? await voidPurchaseOrder(orderId, reason)
         : await voidSaleOrder(orderId, reason);
+    setPending(false);
     if (!result.ok) {
       toast.error(result.error);
       return;
     }
     toast.success("已作废");
     setOpen(false);
-    startTransition(() => router.refresh());
   }
 
   return (

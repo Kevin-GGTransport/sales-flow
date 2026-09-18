@@ -2,8 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { formatDateString, PAYMENT_METHOD_LABEL } from "@/lib/validation";
 import {
-  outstandingDueTotals,
-  outstandingOrders,
+  outstandingOrdersOverview,
   type OutstandingOrder,
 } from "@/lib/reports";
 import { StatCard } from "@/components/ui/stat-card";
@@ -18,10 +17,8 @@ import {
 
 /** 结算中心 · 销账 Tab（原 /payments 列表主体搬迁） */
 export async function PaymentsPanel() {
-  const [totals, sales, purchases, recentPayments] = await Promise.all([
-    outstandingDueTotals(),
-    outstandingOrders("sale"),
-    outstandingOrders("purchase"),
+  const [outstanding, recentPayments] = await Promise.all([
+    outstandingOrdersOverview(),
     prisma.payment.findMany({
       include: {
         createdBy: { select: { name: true } },
@@ -32,6 +29,7 @@ export async function PaymentsPanel() {
       take: 20,
     }),
   ]);
+  const { sales, purchases, receivable, payable } = outstanding;
 
   // Decimal 只留在服务端：客户端组件拿显示字符串 + 排序数值双字段
   const toRows = (orders: OutstandingOrder[]): OutstandingRow[] =>
@@ -68,14 +66,14 @@ export async function PaymentsPanel() {
       <div className="grid gap-4 md:grid-cols-2">
         <StatCard
           label="应收欠款总额（客户欠我们）"
-          value={formatUSD(totals.receivable)}
+          value={formatUSD(receivable)}
           size="lg"
           labelSize="sm"
           tone="destructive"
         />
         <StatCard
           label="应付欠款总额（我们欠供应商）"
-          value={formatUSD(totals.payable)}
+          value={formatUSD(payable)}
           size="lg"
           labelSize="sm"
         />

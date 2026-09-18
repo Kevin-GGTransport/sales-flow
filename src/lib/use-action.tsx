@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 export type ActionMutation = { ok: boolean; error?: string };
@@ -11,7 +10,8 @@ export type ActionMutation = { ok: boolean; error?: string };
  * 不传参数时自带 open 状态（配 DialogTrigger 自管理，如详情页头部的按钮）；
  * 传 controlled 时由持有方控制开关（列表行内单例弹窗：target 行 + key 重挂载）。
  *
- * 约定：成功 → toast + 关弹窗 + router.refresh()（startTransition 包裹，不阻塞 UI）；
+ * 约定：成功 → toast + 关弹窗；Server Action 使用 revalidatePath
+ * 在同一往返中带回新 RSC，客户端不再重复 router.refresh()；
  * 失败 → 错误写入 error 由弹窗内联渲染（DialogFormError），不打 toast。
  */
 export function useActionDialog(
@@ -20,11 +20,9 @@ export function useActionDialog(
     onOpenChange: (open: boolean) => void;
   },
 ) {
-  const router = useRouter();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
 
   const open = controlled ? controlled.open : uncontrolledOpen;
   const setOpen = controlled ? controlled.onOpenChange : setUncontrolledOpen;
@@ -41,24 +39,20 @@ export function useActionDialog(
       }
       if (successToast) toast.success(successToast);
       setOpen(false);
-      startTransition(() => router.refresh());
       return true;
     },
-    // router/startTransition/setOpen 均为稳定引用
-    [router, setOpen, startTransition],
+    [setOpen],
   );
 
   return { open, setOpen, pending, error, run };
 }
 
 /**
- * 非弹窗的行内直接动作（如停用/启用按钮）：成功 toast + refresh，失败 toast。
+ * 非弹窗的行内直接动作（如停用/启用按钮）：成功 toast，失败 toast。
  * run 引用稳定，可安全放进列定义的 useMemo 依赖。
  */
 export function useActionRun() {
-  const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [, startTransition] = useTransition();
 
   const run = useCallback(
     async (fn: () => Promise<ActionMutation>, successToast?: string) => {
@@ -70,10 +64,9 @@ export function useActionRun() {
         return false;
       }
       if (successToast) toast.success(successToast);
-      startTransition(() => router.refresh());
       return true;
     },
-    [router, startTransition],
+    [],
   );
 
   return { pending, run };

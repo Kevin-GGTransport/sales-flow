@@ -1,8 +1,7 @@
 "use client";
 
-import { memo, useCallback, useMemo, useState, useTransition } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Download, FileText, Undo2 } from "lucide-react";
 import { markInvoiced, revokeInvoice } from "@/actions/invoices";
@@ -42,10 +41,8 @@ function InvoiceActions({
   selectedTotal: number;
   onComplete: () => void;
 }) {
-  const router = useRouter();
   const [invoiceDate, setInvoiceDate] = useState(todayISO);
   const [marking, setMarking] = useState(false);
-  const [, startTransition] = useTransition();
 
   async function handleSubmit() {
     if (selectedIds.length === 0) {
@@ -61,7 +58,6 @@ function InvoiceActions({
     }
     toast.success(`已开票 ${selectedIds.length} 张`);
     onComplete();
-    startTransition(() => router.refresh());
   }
 
   return (
@@ -84,10 +80,12 @@ function InvoiceActions({
 function UninvoicedPanel({ uninvoiced }: { uninvoiced: UninvoicedOrder[] }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const selectedTotal = useMemo(
-    () =>
-      uninvoiced
-        .filter((o) => selected.has(o.id))
-        .reduce((s, o) => s + Number(o.totalAmount), 0),
+    () => uninvoiced.reduce(
+      (total, order) => selected.has(order.id)
+        ? total + Number(order.totalAmount)
+        : total,
+      0,
+    ),
     [uninvoiced, selected],
   );
 
@@ -203,20 +201,20 @@ const InvoicedPanel = memo(function InvoicedPanel({
   invoiced: InvoicedOrder[];
   isAdmin: boolean;
 }) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
 
   const handleRevoke = useCallback(
     async (id: string) => {
+      setPending(true);
       const result = await revokeInvoice(id);
+      setPending(false);
       if (!result.ok) {
         toast.error(result.error);
         return;
       }
       toast.success("已撤销开票，该单回到未开票区");
-      startTransition(() => router.refresh());
     },
-    [router, startTransition],
+    [],
   );
 
   const columns = useMemo<DataTableColumn<InvoicedOrder>[]>(

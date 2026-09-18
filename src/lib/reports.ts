@@ -64,16 +64,14 @@ export async function monthlyByOrderDate(year: number): Promise<MonthlyRow[]> {
   const start = new Date(Date.UTC(year, 0, 1));
   const end = new Date(Date.UTC(year + 1, 0, 1));
 
-  const purchases: RawMonthly[] = await prisma.$queryRaw(
-    Prisma.sql`
+  const [purchases, sales] = await Promise.all([
+    prisma.$queryRaw<RawMonthly[]>(Prisma.sql`
       SELECT date_trunc('month', o."orderDate") AS month, SUM(o."totalAmount") AS total, NULL AS consignment
       FROM "PurchaseOrder" o
       WHERE o."status" = 'ACTIVE' AND o."orderDate" >= ${start} AND o."orderDate" < ${end}
       GROUP BY 1 ORDER BY 1
-    `,
-  );
-  const sales: RawMonthly[] = await prisma.$queryRaw(
-    Prisma.sql`
+    `),
+    prisma.$queryRaw<RawMonthly[]>(Prisma.sql`
       SELECT date_trunc('month', o."orderDate") AS month,
              SUM(l."lineTotal") AS total,
              SUM(CASE WHEN l."isConsignment" THEN l."lineTotal" ELSE 0 END) AS consignment
@@ -81,8 +79,8 @@ export async function monthlyByOrderDate(year: number): Promise<MonthlyRow[]> {
       JOIN "SaleOrderLine" l ON l."orderId" = o."id"
       WHERE o."status" = 'ACTIVE' AND o."orderDate" >= ${start} AND o."orderDate" < ${end}
       GROUP BY 1 ORDER BY 1
-    `,
-  );
+    `),
+  ]);
 
   const map = new Map<string, MonthlyRow>();
   const key = (d: Date) =>
@@ -237,56 +235,57 @@ export async function outstandingSummary(): Promise<{
   totalReceivable: string;
   totalPayable: string;
 }> {
-  const [[sales, purchases], totals] = await Promise.all([
-    Promise.all([
-      prisma.saleOrder.findMany({
-        where: { status: "ACTIVE" },
-        include: { payments: { select: { amount: true } } },
-        orderBy: [{ orderDate: "asc" }, { createdAt: "asc" }],
-      }),
-      prisma.purchaseOrder.findMany({
-        where: { status: "ACTIVE" },
-        include: { payments: { select: { amount: true } } },
-        orderBy: [{ orderDate: "asc" }, { createdAt: "asc" }],
-      }),
-    ]),
-    outstandingDueTotals(),
+  const [sales, purchases] = await Promise.all([
+    prisma.saleOrder.findMany({
+      where: { status: "ACTIVE" },
+      include: { payments: { select: { amount: true } } },
+      orderBy: [{ orderDate: "asc" }, { createdAt: "asc" }],
+    }),
+    prisma.purchaseOrder.findMany({
+      where: { status: "ACTIVE" },
+      include: { payments: { select: { amount: true } } },
+      orderBy: [{ orderDate: "asc" }, { createdAt: "asc" }],
+    }),
   ]);
 
   const due = (total: Prisma.Decimal, ps: { amount: Prisma.Decimal }[]) =>
     total.sub(ps.reduce((s, p) => s.add(p.amount), new Decimal(0)));
 
-  const receivables = sales
+  const receivableRows = sales
     .map((o) => ({
       customerName: o.customerName,
       orderNo: o.orderNo,
       orderId: o.id,
       due: due(o.totalAmount, o.payments),
     }))
-    .filter((r) => r.due.greaterThan(0.004))
-    .map((r) => ({ ...r, due: r.due.toDecimalPlaces(2).toString() }));
-  const payables = purchases
+    .filter((r) => r.due.greaterThan(0.004));
+  const payableRows = purchases
     .map((o) => ({
       supplierName: o.supplierName,
       orderNo: o.orderNo,
       orderId: o.id,
       due: due(o.totalAmount, o.payments),
     }))
-    .filter((r) => r.due.greaterThan(0.004))
-    .map((r) => ({ ...r, due: r.due.toDecimalPlaces(2).toString() }));
+    .filter((r) => r.due.greaterThan(0.004));
+
+  const sumDue = (rows: { due: Prisma.Decimal }[]) =>
+    rows.reduce((total, row) => total.add(row.due), new Decimal(0));
 
   return {
-    receivables,
-    payables,
-    totalReceivable: totals.receivable.toDecimalPlaces(2).toString(),
-    totalPayable: totals.payable.toDecimalPlaces(2).toString(),
+    receivables: receivableRows.map((row) => ({
+      ...row,
+      due: row.due.toDecimalPlaces(2).toString(),
+    })),
+    payables: payableRows.map((row) => ({
+      ...row,
+      due: row.due.toDecimalPlaces(2).toString(),
+    })),
+    totalReceivable: sumDue(receivableRows).toDecimalPlaces(2).toString(),
+    totalPayable: sumDue(payableRows).toDecimalPlaces(2).toString(),
   };
 }
 
-/**
- * ── SQL 聚合（汇总页/销账页使用，替代全表拉取进 JS reduce）──
- * 全程 numeric 精确；展示侧 formatUSD 再取整。
- */
+/** 小型 SQL 聚合：避免为了单一指标拉取全表到 JS。 */
 
 /** 库存总价值：Σ qty×avgCost（寄卖件 avgCost=0 天然不计入），结果 2 位 half-up */
 export async function inventoryValueTotal(): Promise<Decimal> {
@@ -313,55 +312,6 @@ export async function inventoryAbnormalCounts(): Promise<{
   return { negative: Number(rows[0].negative), low: Number(rows[0].low) };
 }
 
-async function saleDueTotal(): Promise<Prisma.Decimal> {
-  const rows: { total: Prisma.Decimal }[] = await prisma.$queryRaw(
-    Prisma.sql`
-      SELECT COALESCE(SUM(t."due"), 0) AS total FROM (
-        SELECT o."totalAmount" - COALESCE(pp."paid", 0) AS "due"
-        FROM "SaleOrder" o
-        LEFT JOIN (
-          SELECT "saleOrderId" AS id, SUM("amount") AS paid
-          FROM "Payment" WHERE "saleOrderId" IS NOT NULL GROUP BY 1
-        ) pp ON pp."id" = o."id"
-        WHERE o."status" = 'ACTIVE'
-      ) t WHERE t."due" > 0.004
-    `,
-  );
-  return rows[0].total;
-}
-
-async function purchaseDueTotal(): Promise<Prisma.Decimal> {
-  const rows: { total: Prisma.Decimal }[] = await prisma.$queryRaw(
-    Prisma.sql`
-      SELECT COALESCE(SUM(t."due"), 0) AS total FROM (
-        SELECT o."totalAmount" - COALESCE(pp."paid", 0) AS "due"
-        FROM "PurchaseOrder" o
-        LEFT JOIN (
-          SELECT "purchaseOrderId" AS id, SUM("amount") AS paid
-          FROM "Payment" WHERE "purchaseOrderId" IS NOT NULL GROUP BY 1
-        ) pp ON pp."id" = o."id"
-        WHERE o."status" = 'ACTIVE'
-      ) t WHERE t."due" > 0.004
-    `,
-  );
-  return rows[0].total;
-}
-
-/**
- * 应收/应付欠款总额：逐单 due = totalAmount − Σpayments，due > 0.004 过滤后
- * 对未取整值求和（历史汇总口径；相关页面同源，天然一致）。
- */
-export async function outstandingDueTotals(): Promise<{
-  receivable: Decimal;
-  payable: Decimal;
-}> {
-  const [receivable, payable] = await Promise.all([
-    saleDueTotal(),
-    purchaseDueTotal(),
-  ]);
-  return { receivable, payable };
-}
-
 export type OutstandingOrder = {
   orderId: string;
   orderNo: string;
@@ -373,9 +323,12 @@ export type OutstandingOrder = {
 };
 
 /** 未结清单（销账页）：全程 Decimal 算欠款，无 take 截断，仅返回 due>0 的单 */
-export async function outstandingOrders(
-  kind: "sale" | "purchase",
-): Promise<OutstandingOrder[]> {
+export async function outstandingOrdersOverview(): Promise<{
+  sales: OutstandingOrder[];
+  purchases: OutstandingOrder[];
+  receivable: Decimal;
+  payable: Decimal;
+}> {
   const zero = new Decimal(0);
   const build = (
     orders: {
@@ -402,19 +355,29 @@ export async function outstandingOrders(
       })
       .filter((r) => r.due.greaterThan(0.004));
 
-  if (kind === "sale") {
-    const sales = await prisma.saleOrder.findMany({
+  const [saleOrders, purchaseOrders] = await Promise.all([
+    prisma.saleOrder.findMany({
       where: { status: "ACTIVE" },
       include: { payments: { select: { amount: true } } },
       orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
-    });
-    return build(sales.map((o) => ({ ...o, partyName: o.customerName })));
-  }
+    }),
+    prisma.purchaseOrder.findMany({
+      where: { status: "ACTIVE" },
+      include: { payments: { select: { amount: true } } },
+      orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
+    }),
+  ]);
+  const sales = build(saleOrders.map((o) => ({ ...o, partyName: o.customerName })));
+  const purchases = build(
+    purchaseOrders.map((o) => ({ ...o, partyName: o.supplierName })),
+  );
+  const sumDue = (orders: OutstandingOrder[]) =>
+    orders.reduce((total, order) => total.add(order.due), new Decimal(0));
 
-  const purchases = await prisma.purchaseOrder.findMany({
-    where: { status: "ACTIVE" },
-    include: { payments: { select: { amount: true } } },
-    orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
-  });
-  return build(purchases.map((o) => ({ ...o, partyName: o.supplierName })));
+  return {
+    sales,
+    purchases,
+    receivable: sumDue(sales),
+    payable: sumDue(purchases),
+  };
 }
