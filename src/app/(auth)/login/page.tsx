@@ -50,7 +50,6 @@ export default async function LoginPage() {
               <p className="mt-3 text-sm leading-6 text-[#68776f]">登录后继续处理今天的业务。</p>
             </div>
             <LoginForm />
-            <div className="mt-10 flex items-center gap-3 text-[11px] text-[#87938d]"><span className="h-px flex-1 bg-[#d5ddd7]" /><span>仅限授权员工使用</span><span className="h-px flex-1 bg-[#d5ddd7]" /></div>
           </div>
         </div>
       </section>
