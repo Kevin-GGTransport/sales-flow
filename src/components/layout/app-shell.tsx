@@ -100,7 +100,7 @@ export function AppShell({
           <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-sidebar-border px-4">
             <span className="size-2 shrink-0 rounded-[3px] bg-sidebar-primary" />
             <SheetTitle className="font-heading text-base font-semibold tracking-tight">
-              sales-flow
+              销售部管理系统
             </SheetTitle>
           </div>
           <SheetDescription className="sr-only">主导航菜单</SheetDescription>

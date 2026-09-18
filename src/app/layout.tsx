@@ -22,7 +22,7 @@ const notoSerifSC = Noto_Serif_SC({
 });
 
 export const metadata: Metadata = {
-  title: "sales-flow",
+  title: "销售部管理系统",
   description: "汽车配件买卖 · 库存 · 销账 · 开票",
 };
 

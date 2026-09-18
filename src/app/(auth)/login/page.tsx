@@ -24,8 +24,8 @@ export default async function LoginPage() {
           <div aria-hidden="true" className="absolute inset-y-0 right-8 border-r border-dashed border-[#c6d9c9]/20" />
           <div aria-hidden="true" className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(238,246,235,.08)_1px,transparent_1px)] [background-size:100%_44px]" />
           <div className="relative flex items-center gap-3">
-            <div className="grid size-11 place-items-center rounded-sm border border-[#b9d0bd]/45 bg-[#f2f5eb]/10 font-heading text-xl font-semibold">流</div>
-            <div><p className="font-heading text-xl font-semibold tracking-[.16em]">销售流</p><p className="mt-0.5 font-mono text-[10px] uppercase tracking-[.24em] text-[#b7c9bb]">Sales operations ledger</p></div>
+            <div className="grid size-11 place-items-center rounded-sm border border-[#b9d0bd]/45 bg-[#f2f5eb]/10 font-heading text-xl font-semibold">销</div>
+            <div><p className="font-heading text-xl font-semibold tracking-[.12em]">销售部管理系统</p><p className="mt-0.5 font-mono text-[10px] uppercase tracking-[.2em] text-[#b7c9bb]">Sales management system</p></div>
           </div>
           <div className="relative my-auto max-w-md py-14">
             <p className="mb-5 font-mono text-[11px] uppercase tracking-[.28em] text-[#9eb7a4]">营业账簿 · 总册</p>
@@ -41,8 +41,8 @@ export default async function LoginPage() {
         <div className="relative flex items-center justify-center px-6 py-12 sm:px-12 lg:px-16">
           <div className="w-full max-w-[400px]">
             <div className="mb-10 flex items-center gap-3 lg:hidden">
-              <div className="grid size-10 place-items-center rounded-sm bg-[#173f32] font-heading text-lg font-semibold text-white">流</div>
-              <div><p className="font-heading text-lg font-semibold tracking-[.12em] text-[#18392e]">销售流</p><p className="font-mono text-[9px] uppercase tracking-[.2em] text-[#72837a]">Sales operations ledger</p></div>
+              <div className="grid size-10 place-items-center rounded-sm bg-[#173f32] font-heading text-lg font-semibold text-white">销</div>
+              <div><p className="font-heading text-lg font-semibold tracking-[.1em] text-[#18392e]">销售部管理系统</p><p className="font-mono text-[9px] uppercase tracking-[.18em] text-[#72837a]">Sales management system</p></div>
             </div>
             <div className="mb-9">
               <p className="mb-3 font-mono text-[10px] uppercase tracking-[.24em] text-[#6e8278]">Operator access</p>

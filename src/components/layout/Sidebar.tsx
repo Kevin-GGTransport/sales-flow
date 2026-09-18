@@ -282,7 +282,7 @@ export function Sidebar({
           <>
             <span className="size-2 shrink-0 rounded-[3px] bg-sidebar-primary" />
             <span className="font-heading text-base font-semibold tracking-tight">
-              sales-flow
+              销售部管理系统
             </span>
           </>
         )}
