@@ -105,6 +105,7 @@ export function SaleOrderForm({
           value={rows}
           onChange={setRows}
           allowConsignment
+          useSuggestedSalePrice
         />
         <input type="hidden" name="lines" value={linesJson} />
       </div>

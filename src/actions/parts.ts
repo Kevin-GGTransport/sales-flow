@@ -17,6 +17,7 @@ function parseForm(formData: FormData) {
     description: formData.get("description") ?? "",
     kind: formData.get("kind") ?? "OWNED",
     minQty: formData.get("minQty") ?? "",
+    suggestedSalePrice: formData.get("suggestedSalePrice") ?? "",
   });
 }
 
@@ -30,11 +31,12 @@ export async function createPart(
     if (!parsed.success) {
       return { ok: false, error: parsed.error.issues[0]?.message ?? "表单校验失败" };
     }
-    const { brand, ...rest } = parsed.data;
+    const { brand, suggestedSalePrice, ...rest } = parsed.data;
     const part = await prisma.part.create({
       data: {
         ...rest,
         brand: brand || null,
+        suggestedSalePrice,
         inventory: { create: {} }, // qty=0, avgCost=0
       },
     });
@@ -60,7 +62,7 @@ export async function updatePart(
     if (!parsed.success) {
       return { ok: false, error: parsed.error.issues[0]?.message ?? "表单校验失败" };
     }
-    const { brand, ...rest } = parsed.data;
+    const { brand, suggestedSalePrice, ...rest } = parsed.data;
     const current = await prisma.part.findUnique({
       where: { id },
       select: {
@@ -80,7 +82,7 @@ export async function updatePart(
     }
     await prisma.part.update({
       where: { id },
-      data: { ...rest, brand: brand || null },
+      data: { ...rest, brand: brand || null, suggestedSalePrice },
     });
     revalidatePath("/parts");
     revalidatePath("/inventory");

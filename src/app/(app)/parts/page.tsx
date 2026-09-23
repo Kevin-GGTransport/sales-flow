@@ -49,6 +49,8 @@ export default async function PartsPage({
       qty,
       avgText: hasCost ? formatUSD(avg) : "-",
       avg: hasCost && avg ? avg.toNumber() : null,
+      suggestedSalePriceText: formatUSD(p.suggestedSalePrice),
+      suggestedSalePrice: p.suggestedSalePrice?.toNumber() ?? null,
       valueText: hasCost ? formatUSD(value) : "-",
       value: value ? value.toNumber() : null,
       isActive: p.isActive,

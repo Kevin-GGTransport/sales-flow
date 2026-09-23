@@ -128,13 +128,14 @@ export default async function PartDetailPage({
                 description: part.description ?? "",
                 kind: part.kind,
                 minQty: part.minQty,
+                suggestedSalePrice: part.suggestedSalePrice?.toString() ?? "",
               }}
             />
           </div>
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="库存数量"
           value={qty}
@@ -152,6 +153,13 @@ export default async function PartDetailPage({
         <StatCard
           label="平均成本"
           value={part.kind === "OWNED" ? formatUSD(avg) : "-"}
+          size="lg"
+          labelSize="sm"
+          mono={false}
+        />
+        <StatCard
+          label="建议售价"
+          value={formatUSD(part.suggestedSalePrice)}
           size="lg"
           labelSize="sm"
           mono={false}

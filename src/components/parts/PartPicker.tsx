@@ -26,6 +26,7 @@ export type PartOption = {
   brand?: string | null;
   kind: PartKindValue;
   qty: number;
+  suggestedSalePrice: string | null;
 };
 
 export function PartPicker({

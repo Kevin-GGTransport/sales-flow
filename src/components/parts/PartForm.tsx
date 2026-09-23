@@ -18,6 +18,7 @@ export type PartFormValues = {
   description: string;
   kind: PartKindValue;
   minQty?: number;
+  suggestedSalePrice?: string;
 };
 
 export function PartForm({ initial }: { initial?: PartFormValues }) {
@@ -106,6 +107,19 @@ export function PartForm({ initial }: { initial?: PartFormValues }) {
           ))}
         </div>
       </fieldset>
+      <div className="grid gap-2">
+        <Label htmlFor="suggestedSalePrice">建议售价</Label>
+        <Input
+          id="suggestedSalePrice"
+          name="suggestedSalePrice"
+          inputMode="decimal"
+          defaultValue={initial?.suggestedSalePrice}
+          placeholder="例如 128.00"
+        />
+        <p className="text-xs text-muted-foreground">
+          可留空；新建卖出单选择该 SKU 时自动带入，仍可修改。
+        </p>
+      </div>
       <div className="grid gap-2">
         <Label htmlFor="minQty">安全库存阈值</Label>
         <Input

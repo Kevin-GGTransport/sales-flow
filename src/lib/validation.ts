@@ -21,6 +21,12 @@ export const partSchema = z.object({
       .min(0, "安全库存阈值不能为负")
       .max(1_000_000, "安全库存阈值过大"),
   ),
+  suggestedSalePrice: z.preprocess(
+    (v) => (v == null || String(v).trim() === "" ? null : String(v)),
+    moneyString
+      .refine((v) => Number(v) <= 9_999_999_999.99, "建议售价不能超过 9,999,999,999.99")
+      .nullable(),
+  ),
 });
 
 export type PartInput = z.infer<typeof partSchema>;

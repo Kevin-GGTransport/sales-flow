@@ -45,6 +45,8 @@ export function PartQuickAddDialog({
       brand: String(formData.get("brand") ?? "") || null,
       kind: String(formData.get("kind") ?? "OWNED") as "OWNED" | "CONSIGNMENT",
       qty: 0,
+      suggestedSalePrice:
+        String(formData.get("suggestedSalePrice") ?? "").trim() || null,
     });
     setOpen(false);
     toast.success("配件已创建");
@@ -75,6 +77,15 @@ export function PartQuickAddDialog({
           <div className="grid gap-2">
             <Label htmlFor="qa-brand">品牌</Label>
             <Input id="qa-brand" name="brand" />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="qa-suggestedSalePrice">建议售价</Label>
+            <Input
+              id="qa-suggestedSalePrice"
+              name="suggestedSalePrice"
+              inputMode="decimal"
+              placeholder="可留空"
+            />
           </div>
           {showConsignmentSwitch && (
             <div className="grid gap-2">

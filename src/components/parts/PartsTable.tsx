@@ -13,6 +13,8 @@ export type PartRow = {
   qty: number;
   avgText: string;
   avg: number | null;
+  suggestedSalePriceText: string;
+  suggestedSalePrice: number | null;
   valueText: string;
   value: number | null;
   isActive: boolean;
@@ -66,6 +68,14 @@ const columns: DataTableColumn<PartRow>[] = [
       mono: true,
       sortValue: (r) => r.avg,
       cell: (r) => r.avgText,
+    },
+    {
+      key: "suggestedSalePrice",
+      header: "建议售价",
+      align: "right",
+      mono: true,
+      sortValue: (r) => r.suggestedSalePrice,
+      cell: (r) => r.suggestedSalePriceText,
     },
     {
       key: "value",

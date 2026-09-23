@@ -18,6 +18,7 @@ export default async function NewPurchasePage({
         name: true,
         brand: true,
         kind: true,
+        suggestedSalePrice: true,
         inventory: { select: { qty: true } },
       },
       orderBy: { partNumber: "asc" },
@@ -38,6 +39,7 @@ export default async function NewPurchasePage({
   const parts: PartOption[] = partRows.map((p) => ({
     ...p,
     qty: p.inventory?.qty ?? 0,
+    suggestedSalePrice: p.suggestedSalePrice?.toString() ?? null,
   }));
 
   let copyFromData: Parameters<typeof PurchaseOrderForm>[0]["copyFrom"];

@@ -49,16 +49,17 @@ model User {
 }
 
 model Part {
-  id          String   @id @default(cuid())
-  partNumber  String   @unique
-  name        String
-  brand       String? // 品牌；明治 → 寄卖
-  description String? // 规格 / 适配车型备注
-  kind        PartKind @default(OWNED) // 自营 / 寄卖 / 代保管（单选，避免状态冲突）
-  minQty      Int      @default(0) // 安全库存阈值：>0 时 qty≤该值触发低库存预警；0=不预警
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  partNumber         String   @unique
+  name               String
+  brand              String? // 品牌；明治 → 寄卖
+  description        String? // 规格 / 适配车型备注
+  kind               PartKind @default(OWNED) // 自营 / 寄卖 / 代保管（单选，避免状态冲突）
+  minQty             Int      @default(0) // 安全库存阈值：>0 时 qty≤该值触发低库存预警；0=不预警
+  suggestedSalePrice Decimal? @db.Decimal(12, 2) // 建议售价；空值表示不自动带价
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   inventory     Inventory?
   purchaseLines PurchaseOrderLine[]

@@ -32,12 +32,15 @@ export function OrderLineEditor({
   value,
   onChange,
   allowConsignment = false,
+  useSuggestedSalePrice = false,
 }: {
   parts: PartOption[];
   value: OrderLine[];
   onChange: (rows: OrderLine[]) => void;
   /** 卖出单允许寄卖件；买入单禁选 */
   allowConsignment?: boolean;
+  /** 卖出单选中 SKU 时自动带入建议售价；买入单不启用 */
+  useSuggestedSalePrice?: boolean;
 }) {
   const [parts, setParts] = useState(initialParts);
   // 行级配件查找 O(1)：替代每行每渲染的 parts.find（O(行×配件)）
@@ -81,7 +84,15 @@ export function OrderLineEditor({
               <PartPicker
                 parts={parts}
                 value={row.partId}
-                onChange={(partId) => update(row.key, { partId })}
+                onChange={(partId) => {
+                  const selected = partById.get(partId);
+                  update(row.key, {
+                    partId,
+                    ...(useSuggestedSalePrice
+                      ? { unitPrice: selected?.suggestedSalePrice ?? "" }
+                      : {}),
+                  });
+                }}
                 allowConsignment={allowConsignment}
               />
               {part?.kind === "CONSIGNMENT" && allowConsignment && (
@@ -142,7 +153,14 @@ export function OrderLineEditor({
                 prev.some((p) => p.id === part.id) ? prev : [...prev, part],
               );
               const firstEmpty = value.find((r) => !r.partId);
-              if (firstEmpty) update(firstEmpty.key, { partId: part.id });
+              if (firstEmpty) {
+                update(firstEmpty.key, {
+                  partId: part.id,
+                  ...(useSuggestedSalePrice
+                    ? { unitPrice: part.suggestedSalePrice ?? "" }
+                    : {}),
+                });
+              }
             }}
           />
         </div>

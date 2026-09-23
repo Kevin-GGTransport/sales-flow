@@ -7,6 +7,7 @@ const basePart = {
   brand: "",
   description: "",
   minQty: "0",
+  suggestedSalePrice: "",
 };
 
 describe("partSchema 库存类型", () => {
@@ -19,6 +20,51 @@ describe("partSchema 库存类型", () => {
 
   it("拒绝未知类型", () => {
     expect(partSchema.safeParse({ ...basePart, kind: "UNKNOWN" }).success).toBe(false);
+  });
+});
+
+describe("partSchema 建议售价", () => {
+  it("允许留空", () => {
+    const parsed = partSchema.safeParse({ ...basePart, kind: "OWNED" });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.suggestedSalePrice).toBeNull();
+  });
+
+  it("接受最多两位小数并去除首尾空格", () => {
+    const parsed = partSchema.safeParse({
+      ...basePart,
+      kind: "OWNED",
+      suggestedSalePrice: " 128.50 ",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.suggestedSalePrice).toBe("128.50");
+  });
+
+  it("拒绝三位小数", () => {
+    expect(
+      partSchema.safeParse({
+        ...basePart,
+        kind: "OWNED",
+        suggestedSalePrice: "128.555",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("接受数据库字段上限并拒绝溢出值", () => {
+    expect(
+      partSchema.safeParse({
+        ...basePart,
+        kind: "OWNED",
+        suggestedSalePrice: "9999999999.99",
+      }).success,
+    ).toBe(true);
+    expect(
+      partSchema.safeParse({
+        ...basePart,
+        kind: "OWNED",
+        suggestedSalePrice: "10000000000",
+      }).success,
+    ).toBe(false);
   });
 });
 
