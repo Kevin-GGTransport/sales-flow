@@ -32,6 +32,7 @@ export async function createSaleOrder(
       orderDate: formData.get("orderDate") ?? "",
       customerName: formData.get("customerName") ?? "",
       customerContact: formData.get("customerContact") ?? "",
+      paymentMethod: formData.get("paymentMethod") ?? "",
       note: formData.get("note") ?? "",
       lines: parseLinesFromForm(formData),
     });
@@ -100,6 +101,7 @@ export async function createSaleOrder(
           orderDate,
           customerName: input.customerName,
           customerContact: input.customerContact || null,
+          paymentMethod: input.paymentMethod,
           note: input.note || null,
           totalAmount: total,
           createdById: user.id,

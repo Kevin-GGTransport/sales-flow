@@ -81,21 +81,22 @@ model Inventory {
 }
 
 model PurchaseOrder {
-  id           String      @id @default(cuid())
-  orderNo      String      @unique // PO-20260910-001
-  orderDate    DateTime // 仅日期部分（页面日期选择器给零点）
-  supplierName String
-  note         String?
-  status       OrderStatus @default(ACTIVE)
-  totalAmount  Decimal     @default(0) @db.Decimal(14, 2) // Σ lineTotal，事务内计算
-  voidReason   String?
-  voidedAt     DateTime?
-  voidedById   String?
-  voidedBy     User?       @relation("PurchaseVoider", fields: [voidedById], references: [id])
-  createdById  String
-  createdBy    User        @relation("PurchaseCreator", fields: [createdById], references: [id])
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  orderNo       String      @unique // PO-20260910-001
+  orderDate     DateTime // 仅日期部分（页面日期选择器给零点）
+  supplierName  String
+  paymentMethod String? // 订单约定的付款方式（自由文本；历史单据可为空）
+  note          String?
+  status        OrderStatus @default(ACTIVE)
+  totalAmount   Decimal     @default(0) @db.Decimal(14, 2) // Σ lineTotal，事务内计算
+  voidReason    String?
+  voidedAt      DateTime?
+  voidedById    String?
+  voidedBy      User?       @relation("PurchaseVoider", fields: [voidedById], references: [id])
+  createdById   String
+  createdBy     User        @relation("PurchaseCreator", fields: [createdById], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   lines    PurchaseOrderLine[]
   payments Payment[] // Σ=已付；totalAmount − Σ = 应付欠款
@@ -103,6 +104,7 @@ model PurchaseOrder {
   @@index([orderDate, status])
   @@index([supplierName])
   @@index([status])
+  @@index([createdAt])
 }
 
 model PurchaseOrderLine {
@@ -125,6 +127,7 @@ model SaleOrder {
   orderDate            DateTime
   customerName         String
   customerContact      String? // 电话/邮箱/地址，开票 PDF 用
+  paymentMethod        String? // 订单约定的付款方式（自由文本；历史单据可为空）
   note                 String?
   status               OrderStatus @default(ACTIVE)
   totalAmount          Decimal     @default(0) @db.Decimal(14, 2)
@@ -150,6 +153,7 @@ model SaleOrder {
   @@index([orderDate, status])
   @@index([status, invoiceNo]) // 开票管理页「未开票 ACTIVE」筛选
   @@index([customerName])
+  @@index([createdAt])
 }
 
 model SaleOrderLine {

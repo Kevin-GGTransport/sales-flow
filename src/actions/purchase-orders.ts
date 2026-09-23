@@ -35,6 +35,7 @@ export async function createPurchaseOrder(
     const parsed = purchaseOrderSchema.safeParse({
       orderDate: formData.get("orderDate") ?? "",
       supplierName: formData.get("supplierName") ?? "",
+      paymentMethod: formData.get("paymentMethod") ?? "",
       note: formData.get("note") ?? "",
       lines: parseLinesFromForm(formData),
     });
@@ -88,6 +89,7 @@ export async function createPurchaseOrder(
           orderNo,
           orderDate,
           supplierName: input.supplierName,
+          paymentMethod: input.paymentMethod,
           note: input.note || null,
           totalAmount: total,
           createdById: user.id,

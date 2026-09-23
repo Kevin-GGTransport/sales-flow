@@ -75,6 +75,7 @@ export default async function PurchaseDetailPage({
         <CardContent className="grid gap-1 text-sm md:grid-cols-2">
           <p>日期：{formatDateString(order.orderDate)}</p>
           <p>供应商：{order.supplierName}</p>
+          <p>付款方式：{order.paymentMethod || "-"}</p>
           <p>总金额：<span className="font-medium">{formatUSD(order.totalAmount)}</span></p>
           <p>录单人：{order.createdBy.name}</p>
           {order.note && <p className="md:col-span-2">备注：{order.note}</p>}

@@ -61,6 +61,7 @@ export const orderLineInput = z.object({
 export const purchaseOrderSchema = z.object({
   orderDate: dateString,
   supplierName: z.string().trim().min(1, "供应商必填").max(200, "供应商名过长"),
+  paymentMethod: z.string().trim().min(1, "付款方式必填").max(100, "付款方式过长"),
   note: z.string().trim().max(500, "备注过长"),
   lines: z.array(orderLineInput).min(1, "至少需要一行明细"),
 });
@@ -71,6 +72,7 @@ export const saleOrderSchema = z.object({
   orderDate: dateString,
   customerName: z.string().trim().min(1, "客户必填").max(200, "客户名过长"),
   customerContact: z.string().trim().max(300, "联系方式过长"),
+  paymentMethod: z.string().trim().min(1, "付款方式必填").max(100, "付款方式过长"),
   note: z.string().trim().max(500, "备注过长"),
   lines: z.array(orderLineInput).min(1, "至少需要一行明细"),
 });

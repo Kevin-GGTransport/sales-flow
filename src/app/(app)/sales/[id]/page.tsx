@@ -89,6 +89,7 @@ export default async function SaleDetailPage({
           <p>日期：{formatDateString(order.orderDate)}</p>
           <p>客户：{order.customerName}</p>
           {order.customerContact && <p>联系方式：{order.customerContact}</p>}
+          <p>付款方式：{order.paymentMethod || "-"}</p>
           <p>总金额：<span className="font-medium">{formatUSD(order.totalAmount)}</span></p>
           <p>自营毛利：<span className="font-medium">{formatUSD(grossProfit)}</span></p>
           <p>录单人：{order.createdBy.name}</p>

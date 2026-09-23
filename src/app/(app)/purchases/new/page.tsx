@@ -9,7 +9,7 @@ export default async function NewPurchasePage({
   const { copyFrom } = await searchParams;
 
   // 配件清单与「复制重开」来源单互不依赖，并行取
-  const [partRows, src] = await Promise.all([
+  const [partRows, src, paymentMethodRows] = await Promise.all([
     prisma.part.findMany({
       where: { isActive: true, kind: "OWNED" },
       select: {
@@ -28,6 +28,12 @@ export default async function NewPurchasePage({
           include: { lines: true },
         })
       : Promise.resolve(null),
+    prisma.purchaseOrder.findMany({
+      where: { paymentMethod: { not: null } },
+      select: { paymentMethod: true },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
   ]);
   const parts: PartOption[] = partRows.map((p) => ({
     ...p,
@@ -38,6 +44,7 @@ export default async function NewPurchasePage({
   if (src && src.status === "ACTIVE") {
     copyFromData = {
       supplierName: src.supplierName,
+      paymentMethod: src.paymentMethod ?? "",
       note: src.note ?? "",
       lines: src.lines.map((l) => ({
         partId: l.partId,
@@ -46,13 +53,24 @@ export default async function NewPurchasePage({
       })),
     };
   }
+  const paymentMethodHistory = [
+    ...new Set(
+      paymentMethodRows.flatMap((row) =>
+        row.paymentMethod?.trim() ? [row.paymentMethod.trim()] : [],
+      ),
+    ),
+  ].slice(0, 12);
 
   return (
     <div className="space-y-4">
       <PageHeader
         title={copyFromData ? "复制重开买入单" : "新建买入单"}
       />
-      <PurchaseOrderForm parts={parts} copyFrom={copyFromData} />
+      <PurchaseOrderForm
+        parts={parts}
+        copyFrom={copyFromData}
+        paymentMethodHistory={paymentMethodHistory}
+      />
     </div>
   );
 }

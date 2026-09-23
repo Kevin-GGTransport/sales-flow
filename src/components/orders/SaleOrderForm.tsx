@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { PartOption } from "@/components/parts/PartPicker";
+import { PaymentMethodInput } from "@/components/orders/PaymentMethodInput";
 import {
   OrderLineEditor,
   newRow,
@@ -19,6 +20,7 @@ import {
 export type CopyFromData = {
   customerName: string;
   customerContact: string;
+  paymentMethod: string;
   note: string;
   lines: { partId: string; qty: number; unitPrice: string }[];
 };
@@ -26,9 +28,11 @@ export type CopyFromData = {
 export function SaleOrderForm({
   parts,
   copyFrom,
+  paymentMethodHistory,
 }: {
   parts: PartOption[];
   copyFrom?: CopyFromData;
+  paymentMethodHistory: string[];
 }) {
   const today = todayISO();
   const [rows, setRows] = useState<OrderLine[]>(() =>
@@ -88,6 +92,11 @@ export function SaleOrderForm({
             placeholder="电话 / 邮箱 / 地址（开发票时用）"
           />
         </div>
+        <PaymentMethodInput
+          id="salePaymentMethod"
+          defaultValue={copyFrom?.paymentMethod}
+          history={paymentMethodHistory}
+        />
       </div>
 
       <div className="grid gap-2">

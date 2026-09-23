@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { PartOption } from "@/components/parts/PartPicker";
+import { PaymentMethodInput } from "@/components/orders/PaymentMethodInput";
 import {
   OrderLineEditor,
   newRow,
@@ -25,6 +26,7 @@ import {
 
 export type CopyFromData = {
   supplierName: string;
+  paymentMethod: string;
   note: string;
   lines: { partId: string; qty: number; unitPrice: string }[];
 };
@@ -32,9 +34,11 @@ export type CopyFromData = {
 export function PurchaseOrderForm({
   parts,
   copyFrom,
+  paymentMethodHistory,
 }: {
   parts: PartOption[];
   copyFrom?: CopyFromData;
+  paymentMethodHistory: string[];
 }) {
   const today = todayISO();
   const [rows, setRows] = useState<OrderLine[]>(() =>
@@ -85,6 +89,11 @@ export function PurchaseOrderForm({
             required
           />
         </div>
+        <PaymentMethodInput
+          id="purchasePaymentMethod"
+          defaultValue={copyFrom?.paymentMethod}
+          history={paymentMethodHistory}
+        />
       </div>
 
       <div className="grid gap-2">
