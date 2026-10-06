@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { PurchaseOrderForm } from "@/components/orders/PurchaseOrderForm";
+import {
+  PurchaseOrderForm,
+  type PurchaseOrderInitial,
+} from "@/components/orders/PurchaseOrderForm";
 import type { PartOption } from "@/components/parts/PartPicker";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -42,7 +45,7 @@ export default async function NewPurchasePage({
     suggestedSalePrice: p.suggestedSalePrice?.toString() ?? null,
   }));
 
-  let copyFromData: Parameters<typeof PurchaseOrderForm>[0]["copyFrom"];
+  let copyFromData: PurchaseOrderInitial | undefined;
   if (src && src.status === "ACTIVE") {
     copyFromData = {
       supplierName: src.supplierName,
@@ -70,7 +73,7 @@ export default async function NewPurchasePage({
       />
       <PurchaseOrderForm
         parts={parts}
-        copyFrom={copyFromData}
+        initial={copyFromData}
         paymentMethodHistory={paymentMethodHistory}
       />
     </div>

@@ -1,13 +1,8 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { Decimal } from "@/lib/money";
-import {
-  applyAdjustment,
-  applyPurchase,
-  applySale,
-  ZERO_STATE,
-  type InventoryState,
-} from "@/lib/weighted-average";
+import { foldEvents, sortEvents, type PartKind, type ReplayEvent } from "@/lib/replay";
+import type { InventoryState } from "@/lib/weighted-average";
 
 export type Tx = Prisma.TransactionClient;
 
@@ -17,16 +12,17 @@ type RawInventoryRow = { partId: string; qty: number; avgCost: Prisma.Decimal };
  * 锁定涉及配件的库存行（FOR UPDATE，防并发双单竞争同一配件），
  * 返回锁定后读到的 partId → {qty, avgCost}。
  * 注意：行可能不存在（配件从没建过库存行）——调用方 upsert。
+ * ORDER BY 保证加锁物理顺序全局确定（配合入参去重排序，跨单据不死锁）。
  */
 export async function lockInventoryRows(
   tx: Tx,
   partIds: string[],
 ): Promise<Map<string, InventoryState>> {
-  const ids = [...new Set(partIds)];
+  const ids = [...new Set(partIds)].sort();
   if (ids.length === 0) return new Map();
 
   const rows: RawInventoryRow[] = await tx.$queryRaw(
-    Prisma.sql`SELECT "partId", "qty", "avgCost" FROM "Inventory" WHERE "partId" IN (${Prisma.join(ids)}) FOR UPDATE`,
+    Prisma.sql`SELECT "partId", "qty", "avgCost" FROM "Inventory" WHERE "partId" IN (${Prisma.join(ids)}) ORDER BY "partId" FOR UPDATE`,
   );
   const map = new Map<string, InventoryState>();
   for (const row of rows) {
@@ -35,33 +31,22 @@ export async function lockInventoryRows(
   return map;
 }
 
-type ReplayEvent = {
-  date: Date;
-  createdAt: Date;
-  seq: number;
-  kind: "IN" | "OUT";
-  qty: number;
-  price?: Prisma.Decimal;
-  /** 库存调整（寄卖入库/退回、自营盘盈/盘亏）：只动数量不动均价（盘盈成本基础 0） */
-  qtyOnly?: boolean;
-};
-
 /**
- * 重放法重算一个配件的库存：按时间顺序回放全部 ACTIVE 单据行（+ 寄卖调整），
- * 从 {qty:0, avg:0} 起逐笔 apply，写回 Inventory。
+ * 收集一个配件的全部重放事件（ACTIVE 买入行带价、ACTIVE 卖出行、全部库存调整）。
  *
- * 为什么重放而不是逆向冲销：作废中间一笔买入会改变其后所有进货的
- * reset/blend 分支（负库存时进价直接重置均价），逆向减法在数学上不封闭；
- * 重放永远精确。内部工具数据量下成本可忽略。
- *
- * 注意：不重算其他卖出单已落的 costAtSale（快照原则，有意为之）。
+ * 三段 findMany 都带 orderBy id：事件排序的最终 tie-break 是收集序 seq，
+ * 查询顺序必须确定（否则「同 (date, createdAt) 平局组内顺序」依赖数据库返回顺序，
+ * 时点均价快照会不稳定）。不变量见 replay.ts sortEvents 注释。
  */
-export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
+async function collectPartEvents(
+  tx: Tx,
+  partId: string,
+): Promise<{ kind: PartKind; events: ReplayEvent[] } | null> {
   const part = await tx.part.findUnique({
     where: { id: partId },
     select: { kind: true },
   });
-  if (!part) return;
+  if (!part) return null;
 
   const events: ReplayEvent[] = [];
   let seq = 0;
@@ -69,7 +54,13 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
   if (part.kind === "OWNED") {
     const purchaseLines = await tx.purchaseOrderLine.findMany({
       where: { partId, order: { status: "ACTIVE" } },
-      select: { qty: true, unitPrice: true, order: { select: { orderDate: true, createdAt: true } } },
+      select: {
+        qty: true,
+        unitPrice: true,
+        orderId: true,
+        order: { select: { orderDate: true, createdAt: true } },
+      },
+      orderBy: { id: "asc" },
     });
     for (const line of purchaseLines) {
       events.push({
@@ -78,7 +69,8 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
         seq: seq++,
         kind: "IN",
         qty: line.qty,
-        price: line.unitPrice,
+        price: new Decimal(line.unitPrice),
+        orderId: line.orderId,
       });
     }
   }
@@ -86,7 +78,12 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
   if (part.kind !== "CUSTODY") {
     const saleLines = await tx.saleOrderLine.findMany({
       where: { partId, order: { status: "ACTIVE" } },
-      select: { qty: true, order: { select: { orderDate: true, createdAt: true } } },
+      select: {
+        qty: true,
+        orderId: true,
+        order: { select: { orderDate: true, createdAt: true } },
+      },
+      orderBy: { id: "asc" },
     });
     for (const line of saleLines) {
       events.push({
@@ -95,6 +92,7 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
         seq: seq++,
         kind: "OUT",
         qty: line.qty,
+        orderId: line.orderId,
       });
     }
   }
@@ -104,6 +102,7 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
   const adjustments = await tx.stockAdjustment.findMany({
     where: { partId },
     select: { qty: true, adjDate: true, createdAt: true },
+    orderBy: { id: "asc" },
   });
   for (const adj of adjustments) {
     events.push({
@@ -116,39 +115,56 @@ export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
     });
   }
 
-  events.sort(
-    (a, b) =>
-      a.date.getTime() - b.date.getTime() ||
-      a.createdAt.getTime() - b.createdAt.getTime() ||
-      a.seq - b.seq,
-  );
+  return { kind: part.kind, events };
+}
 
-  let state: InventoryState = ZERO_STATE();
-  for (const ev of events) {
-    if (part.kind !== "OWNED") {
-      // 寄卖/代保管：只动数量，无成本体系
-      state = {
-        qty: state.qty + (ev.kind === "IN" ? ev.qty : -ev.qty),
-        avgCost: state.avgCost,
-      };
-    } else if (ev.qtyOnly) {
-      // 盘盈/盘亏：只动数量不动均价（adjustment 无 price，不能走 applyPurchase）
-      state = applyAdjustment(
-        state,
-        ev.kind === "IN" ? ev.qty : -ev.qty,
-      );
-    } else if (ev.kind === "IN") {
-      state = applyPurchase(state, ev.qty, ev.price!);
-    } else {
-      state = applySale(state, ev.qty);
-    }
-  }
-
+async function upsertInventory(
+  tx: Tx,
+  partId: string,
+  state: InventoryState,
+): Promise<void> {
   await tx.inventory.upsert({
     where: { partId },
     create: { partId, qty: state.qty, avgCost: state.avgCost },
     update: { qty: state.qty, avgCost: state.avgCost },
   });
+}
+
+/**
+ * 重放法重算一个配件的库存：按时间顺序回放全部 ACTIVE 单据行（+ 寄卖调整），
+ * 从 {qty:0, avg:0} 起逐笔 apply，写回 Inventory。
+ * 不重算其他卖出单已落的 costAtSale（快照原则，有意为之）。
+ */
+export async function recomputeByReplay(tx: Tx, partId: string): Promise<void> {
+  const collected = await collectPartEvents(tx, partId);
+  if (!collected) return;
+  const state = foldEvents(collected.kind, sortEvents(collected.events));
+  await upsertInventory(tx, partId, state);
+}
+
+/**
+ * 重算库存并返回「目标卖出单在该配件上出库时点的 avgCost」——
+ * 编辑卖出单后回填 costAtSale 快照用（改了日期/数量 = 卖出发生在新时点）。
+ *
+ * 返回 null：目标单在该配件上无出库事件，或寄卖/代保管件（无成本体系，
+ * 快照恒 0，无需回填）。同单同配件多行共用同一时点均价（证明见 sortEvents 注释）。
+ */
+export async function recomputeWithOrderSnapshot(
+  tx: Tx,
+  partId: string,
+  orderId: string,
+): Promise<{ snapshotAvgCost: Decimal | null }> {
+  const collected = await collectPartEvents(tx, partId);
+  if (!collected) return { snapshotAvgCost: null };
+
+  let snapshot: Decimal | null = null;
+  const state = foldEvents(collected.kind, sortEvents(collected.events), (ev, stateBefore) => {
+    if (ev.orderId === orderId && snapshot === null) {
+      snapshot = stateBefore.avgCost;
+    }
+  });
+  await upsertInventory(tx, partId, state);
+  return { snapshotAvgCost: collected.kind === "OWNED" ? snapshot : null };
 }
 
 function isDeadlock(e: unknown): boolean {

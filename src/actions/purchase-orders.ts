@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@/generated/prisma/client";
 import { requireAdmin, requireUser } from "@/lib/guard";
-import { Decimal, lineTotalOf } from "@/lib/money";
+import { Decimal, formatUSD, lineTotalOf } from "@/lib/money";
 import {
   lockInventoryRows,
   recomputeByReplay,
@@ -12,6 +13,7 @@ import { nextOrderNo } from "@/lib/order-no";
 import {
   dateToUtcMidnight,
   parseLinesFromForm,
+  purchaseOrderEditSchema,
   purchaseOrderSchema,
 } from "@/lib/validation";
 import { applyPurchase } from "@/lib/weighted-average";
@@ -98,16 +100,17 @@ export async function createPurchaseOrder(
         },
       });
 
-      // 当场付款快捷项：建单同时记一笔付款（金额空 = 全额，且 ≤ 单据总额）
+      // 当场付款快捷项：建单同时记一笔付款（金额空 = 全额，且 ≤ 单据总额）。
+      // 此时订单已 create，事务内只能 throw（return 会提交已写的订单）
       const payNowMethod = String(formData.get("payNowMethod") ?? "NONE");
       const payNowAmountRaw = String(formData.get("payNowAmount") ?? "").trim();
       if (payNowMethod !== "NONE") {
         if (payNowAmountRaw && !/^\d+(\.\d{1,2})?$/.test(payNowAmountRaw)) {
-          return { ok: false, error: "当场付款金额格式不正确" };
+          throw new Error("当场付款金额格式不正确");
         }
         const payAmount = payNowAmountRaw ? new Decimal(payNowAmountRaw) : total;
         if (payAmount.gt(total)) {
-          return { ok: false, error: "当场付款金额不能超过单据总额" };
+          throw new Error("当场付款金额不能超过单据总额");
         }
         if (payAmount.gt(0)) {
           await tx.payment.create({
@@ -190,8 +193,135 @@ export async function voidPurchaseOrder(
     revalidatePath(`/purchases/${id}`);
     revalidatePath("/parts");
     revalidatePath("/inventory");
+    revalidatePath("/settlement");
+    revalidatePath("/");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "作废失败" };
+  }
+}
+
+/**
+ * 修改买入单（ADMIN，仅 ACTIVE、无开票概念）。单号/createdAt/createdBy 不变。
+ * 改单价/日期会改变后续进货的 reset/blend 轨迹，由重放重算；已有卖出单的
+ * costAtSale 快照不追溯。事务纪律：第一笔写之前可 return 校验错误，之后只 throw。
+ */
+export async function updatePurchaseOrder(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const user = await requireAdmin();
+    const parsed = purchaseOrderEditSchema.safeParse({
+      orderId: formData.get("orderId") ?? "",
+      orderDate: formData.get("orderDate") ?? "",
+      supplierName: formData.get("supplierName") ?? "",
+      paymentMethod: formData.get("paymentMethod") ?? "",
+      note: formData.get("note") ?? "",
+      lines: parseLinesFromForm(formData),
+    });
+    if (!parsed.success) {
+      return { ok: false, error: parsed.error.issues[0]?.message ?? "表单校验失败" };
+    }
+    const input = parsed.data;
+    const orderDate = dateToUtcMidnight(input.orderDate);
+
+    const result = await withTxRetry<TxResult>(async (tx) => {
+      // 先锁单据行再读（与 addPayment 同序：单据行 → 库存行），串行化并发编辑/付款
+      await tx.$queryRaw(
+        Prisma.sql`SELECT "id" FROM "PurchaseOrder" WHERE "id" = ${input.orderId} FOR UPDATE`,
+      );
+      const order = await tx.purchaseOrder.findUnique({
+        where: { id: input.orderId },
+        select: {
+          orderNo: true,
+          status: true,
+          lines: { select: { partId: true } },
+        },
+      });
+      if (!order) return { ok: false, error: "单据不存在" };
+      if (order.status === "VOID") return { ok: false, error: "该单已作废，不能修改" };
+
+      const newPartIds = input.lines.map((l) => l.partId);
+      const parts = await tx.part.findMany({
+        where: { id: { in: newPartIds } },
+        select: { id: true, kind: true, partNumber: true },
+      });
+      const partMap = new Map(parts.map((p) => [p.id, p]));
+      if (input.lines.some((l) => !partMap.has(l.partId))) {
+        return { ok: false, error: "存在无效配件，请重新选择" };
+      }
+      const external = input.lines.find((l) => partMap.get(l.partId)?.kind !== "OWNED");
+      if (external) {
+        return {
+          ok: false,
+          error: `非自营配件（${partMap.get(external.partId)?.partNumber}）不能走买入单`,
+        };
+      }
+
+      let total = new Decimal(0);
+      const lineData = input.lines.map((line) => {
+        const price = new Decimal(line.unitPrice);
+        const lineTotal = lineTotalOf(line.qty, price);
+        total = total.add(lineTotal);
+        return { partId: line.partId, qty: line.qty, unitPrice: price, lineTotal };
+      });
+
+      // 收付款守卫：改后总额不得低于已付合计
+      const paidAgg = await tx.payment.aggregate({
+        _sum: { amount: true },
+        where: { purchaseOrderId: input.orderId },
+      });
+      const paid = new Decimal(paidAgg._sum.amount ?? 0);
+      if (total.lt(paid)) {
+        return {
+          ok: false,
+          error: `改后总额（${formatUSD(total)}）不能低于已付款合计（${formatUSD(paid)}）；请先删除多余付款或调高金额`,
+        };
+      }
+
+      // 受影响配件 = 旧行 ∪ 新行（被移除的配件也要重放把入库冲回）
+      const affected = [
+        ...new Set([...order.lines.map((l) => l.partId), ...newPartIds]),
+      ].sort();
+      await lockInventoryRows(tx, affected);
+
+      await tx.purchaseOrder.update({
+        where: { id: input.orderId },
+        data: {
+          orderDate,
+          supplierName: input.supplierName,
+          paymentMethod: input.paymentMethod,
+          note: input.note || null,
+          totalAmount: total,
+          editedAt: new Date(),
+          editedById: user.id,
+        },
+      });
+      await tx.purchaseOrderLine.deleteMany({ where: { orderId: input.orderId } });
+      for (const line of lineData) {
+        await tx.purchaseOrderLine.create({
+          data: { orderId: input.orderId, ...line },
+        });
+      }
+
+      for (const partId of affected) {
+        await recomputeByReplay(tx, partId);
+      }
+
+      return { ok: true, id: input.orderId, orderNo: order.orderNo };
+    });
+
+    if (!result.ok) return result;
+
+    revalidatePath("/orders");
+    revalidatePath(`/purchases/${result.id}`);
+    revalidatePath("/parts");
+    revalidatePath("/inventory");
+    revalidatePath("/settlement");
+    revalidatePath("/");
+    return { ok: true, id: result.id, orderNo: result.orderNo };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "修改失败" };
   }
 }

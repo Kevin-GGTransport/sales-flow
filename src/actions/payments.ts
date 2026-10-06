@@ -37,19 +37,19 @@ export async function addPayment(input: {
 
     await prisma.$transaction(
       async (tx) => {
-      // 先锁单据行，再聚合已收/付，防并发超额
-      const order = hasSale
-        ? await tx.saleOrder.findUnique({ where: { id: data.saleOrderId! } })
-        : await tx.purchaseOrder.findUnique({ where: { id: data.purchaseOrderId! } });
-      if (!order) throw new Error("单据不存在");
-      if (order.status !== "ACTIVE") throw new Error("单据已作废，不能收/付款");
-
-      // 行锁（SELECT ... FOR UPDATE）确保余额计算原子性
+      // 行锁（SELECT ... FOR UPDATE）确保余额计算原子性。
+      // 必须先锁后读：总额可被「修改单据」并发变更，锁前读到的旧总额会让超额校验穿透。
       await tx.$queryRaw(
         hasSale
           ? Prisma.sql`SELECT "id" FROM "SaleOrder" WHERE "id" = ${data.saleOrderId} FOR UPDATE`
           : Prisma.sql`SELECT "id" FROM "PurchaseOrder" WHERE "id" = ${data.purchaseOrderId} FOR UPDATE`,
       );
+
+      const order = hasSale
+        ? await tx.saleOrder.findUnique({ where: { id: data.saleOrderId! } })
+        : await tx.purchaseOrder.findUnique({ where: { id: data.purchaseOrderId! } });
+      if (!order) throw new Error("单据不存在");
+      if (order.status !== "ACTIVE") throw new Error("单据已作废，不能收/付款");
 
       const paidAgg = hasSale
         ? await tx.payment.aggregate({

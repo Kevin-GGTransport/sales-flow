@@ -36,7 +36,7 @@ Next.js 16 (App Router, Turbopack) · TypeScript · Prisma 7（`prisma-client` �
 
 ### 核心业务规则（改代码前必读）
 
-- **单据不可变**：买入/卖出单保存后不可改，录错由 ADMIN 作废（留痕）+「复制重开」；有收付款或已开票的单先清掉这些才能作废。
+- **单据默认不可变，ADMIN 可修改**：买入/卖出单保存后，STAFF 不可改（录错走 ADMIN 作废留痕 +「复制重开」）；ADMIN 可在详情页「修改」ACTIVE 单（表头+行全可改，留痕 editedAt/editedById，单号/createdAt 不变——改日期后单号前缀与日期脱钩是有意决策）。限制：已开票的单先撤销开票才能改；有收付款的单改后总额不得低于已收/已付合计。修改后库存与均价由 `recomputeByReplay` 重放重算（受影响配件=旧行∪新行）；**本单**卖出行的 `costAtSale`/`isConsignment` 按新时点与当前 part.kind 重取（先占位 0 写行，重放经 `recomputeWithOrderSnapshot` 取时点均价后逐行回填），**其他单**的快照仍不追溯。
 - **加权平均成本**：`src/lib/weighted-average.ts` 纯函数——库存 ≤ 0 时进货，均价**直接重置为本次进价**（不 blend）；卖出可穿透负库存且不改均价。任何单据变更后库存由 `recomputeByReplay`（`src/lib/inventory.ts`）**按时间重放全部有效事件**得出，不用逆向冲销。
 - **成本快照不追溯**：卖出行的 `costAtSale` 是卖出当时的均价快照，永不重算（作废买入单也不改其他单的快照）。
 - **寄卖件**（明治）：`Part.isConsignment`，只走「寄卖入库/退回」（StockAdjustment，只动数量）；卖出只消库存、成本 0、不计利润；**禁止进买入单**。结算价与寄卖利润暂未做（用户待定），模型已预留（行级 `isConsignment` 快照）。
@@ -51,7 +51,7 @@ Next.js 16 (App Router, Turbopack) · TypeScript · Prisma 7（`prisma-client` �
 | 操作 | ADMIN | STAFF |
 |---|---|---|
 | 登录/查看（除用户管理）、配件、录单、寄卖调整、收付款、开票、下载 PDF | ✓ | ✓ |
-| 作废单据、撤销开票、删除收付款、自营件盘盈/盘亏（库存调整） | ✓ | ✗ |
+| 修改单据、作废单据、撤销开票、删除收付款、自营件盘盈/盘亏（库存调整） | ✓ | ✗ |
 | 用户管理 | ✓ | ✗ |
 
 ## Testing

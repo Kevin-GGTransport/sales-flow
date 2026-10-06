@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { SaleOrderForm } from "@/components/orders/SaleOrderForm";
+import { SaleOrderForm, type SaleOrderInitial } from "@/components/orders/SaleOrderForm";
 import type { PartOption } from "@/components/parts/PartPicker";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -42,11 +42,12 @@ export default async function NewSalePage({
     suggestedSalePrice: p.suggestedSalePrice?.toString() ?? null,
   }));
 
-  let copyFromData: Parameters<typeof SaleOrderForm>[0]["copyFrom"];
+  let copyFromData: SaleOrderInitial | undefined;
   if (src && src.status === "ACTIVE") {
     copyFromData = {
       customerName: src.customerName,
       customerContact: src.customerContact ?? "",
+      customerAddress: src.customerAddress ?? "",
       paymentMethod: src.paymentMethod ?? "",
       note: src.note ?? "",
       taxRate: src.taxRate.toString(),
@@ -72,7 +73,7 @@ export default async function NewSalePage({
       />
       <SaleOrderForm
         parts={parts}
-        copyFrom={copyFromData}
+        initial={copyFromData}
         paymentMethodHistory={paymentMethodHistory}
       />
     </div>

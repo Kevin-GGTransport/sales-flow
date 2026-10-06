@@ -74,6 +74,7 @@ const baseSale = {
   orderDate: "2026-09-23",
   customerName: "客户",
   customerContact: "",
+  customerAddress: "",
   paymentMethod: "现金",
   note: "",
   taxRate: "10.75",

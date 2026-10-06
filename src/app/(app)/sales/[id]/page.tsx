@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { EditSaleOrderDialog } from "@/components/orders/EditOrderDialog";
 import { VoidOrderDialog } from "@/components/orders/VoidOrderDialog";
 import { PaymentsCard } from "@/components/payments/PaymentsCard";
 import { TablePanel } from "@/components/ui/table-panel";
@@ -33,6 +34,7 @@ export default async function SaleDetailPage({
         lines: { include: { part: true } },
         createdBy: { select: { name: true } },
         voidedBy: { select: { name: true } },
+        editedBy: { select: { name: true } },
         payments: {
           include: { createdBy: { select: { name: true } } },
           orderBy: { payDate: "asc" },
@@ -73,6 +75,13 @@ export default async function SaleDetailPage({
               </Button>
             )}
             {isAdminFlag && order.status === "ACTIVE" && (
+              <EditSaleOrderDialog
+                orderId={order.id}
+                disabled={Boolean(order.invoiceNo)}
+                disabledReason="已开票的单不能直接修改：请先在「开票」页撤销开票。"
+              />
+            )}
+            {isAdminFlag && order.status === "ACTIVE" && (
               <VoidOrderDialog
                 kind="sale"
                 orderId={order.id}
@@ -92,6 +101,7 @@ export default async function SaleDetailPage({
           <p>日期：{formatDateString(order.orderDate)}</p>
           <p>客户：{order.customerName}</p>
           {order.customerContact && <p>联系方式：{order.customerContact}</p>}
+          {order.customerAddress && <p>地址：{order.customerAddress}</p>}
           <p>付款方式：{order.paymentMethod || "-"}</p>
           <p>
             {hasTax ? "总金额（含税）" : "总金额"}：
@@ -108,6 +118,12 @@ export default async function SaleDetailPage({
           )}
           <p>自营毛利：<span className="font-medium">{formatUSD(grossProfit)}</span></p>
           <p>录单人：{order.createdBy.name}</p>
+          {order.editedAt && (
+            <p className="text-muted-foreground">
+              修改于 {formatDateString(order.editedAt)}
+              {order.editedBy?.name ? `（${order.editedBy.name}）` : ""}
+            </p>
+          )}
           {order.invoiceNo && (
             <p>
               开票：{order.invoiceNo}（{formatDateString(order.invoiceDate)}）

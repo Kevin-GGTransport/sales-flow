@@ -44,6 +44,8 @@ model User {
   voidedPurchases  PurchaseOrder[]   @relation("PurchaseVoider")
   voidedSales      SaleOrder[]       @relation("SaleVoider")
   invoicedSales    SaleOrder[]       @relation("InvoiceIssuer")
+  editedPurchases  PurchaseOrder[]   @relation("PurchaseEditor")
+  editedSales      SaleOrder[]       @relation("SaleEditor")
   payments         Payment[]
   stockAdjustments StockAdjustment[]
 }
@@ -94,6 +96,10 @@ model PurchaseOrder {
   voidedAt      DateTime?
   voidedById    String?
   voidedBy      User?       @relation("PurchaseVoider", fields: [voidedById], references: [id])
+  // 修改留痕：ADMIN 可改 ACTIVE 单（单号不变），只记最后一次
+  editedAt      DateTime?
+  editedById    String?
+  editedBy      User?       @relation("PurchaseEditor", fields: [editedById], references: [id])
   createdById   String
   createdBy     User        @relation("PurchaseCreator", fields: [createdById], references: [id])
   createdAt     DateTime    @default(now())
@@ -127,7 +133,8 @@ model SaleOrder {
   orderNo              String      @unique // SO-20260910-001
   orderDate            DateTime
   customerName         String
-  customerContact      String? // 电话/邮箱/地址，开票 PDF 用
+  customerContact      String? // 电话/邮箱，开票 PDF 用
+  customerAddress      String? // 客户地址，开票 PDF 用（旧数据混在 customerContact，不自动拆分）
   paymentMethod        String? // 订单约定的付款方式（自由文本；历史单据可为空）
   note                 String?
   status               OrderStatus @default(ACTIVE)
@@ -145,6 +152,10 @@ model SaleOrder {
   voidedAt             DateTime?
   voidedById           String?
   voidedBy             User?       @relation("SaleVoider", fields: [voidedById], references: [id])
+  // 修改留痕：ADMIN 可改 ACTIVE 单（单号不变），只记最后一次
+  editedAt             DateTime?
+  editedById           String?
+  editedBy             User?       @relation("SaleEditor", fields: [editedById], references: [id])
   createdById          String
   createdBy            User        @relation("SaleCreator", fields: [createdById], references: [id])
   createdAt            DateTime    @default(now())

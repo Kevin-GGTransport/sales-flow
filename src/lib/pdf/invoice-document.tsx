@@ -38,6 +38,7 @@ export type InvoiceData = {
   invoiceDate: string; // yyyy-mm-dd
   customerName: string;
   customerContact: string;
+  customerAddress?: string;
   lines: InvoiceLineData[];
   total: string; // "150.00"（含税）
   /** 以下三项传入且 taxAmount > 0 时，TOTAL 上方渲染 SUBTOTAL / SALES TAX 两行；历史无税单不传或传 0 保持单行 TOTAL */
@@ -98,6 +99,7 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
             <Text style={styles.billToLabel}>BILL TO</Text>
             <Text>{data.customerName}</Text>
             {data.customerContact ? <Text style={{ color: "#555" }}>{data.customerContact}</Text> : null}
+            {data.customerAddress ? <Text style={{ color: "#555" }}>{data.customerAddress}</Text> : null}
           </View>
           <Text style={styles.title}>INVOICE</Text>
         </View>

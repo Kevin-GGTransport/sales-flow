@@ -31,6 +31,7 @@ export async function GET(
         invoiceDate: formatDateString(order.invoiceDate),
         customerName: order.customerName,
         customerContact: order.customerContact ?? "",
+        customerAddress: order.customerAddress ?? "",
         lines: order.lines.map((l) => ({
           partNumber: l.part.partNumber,
           description: l.part.name,

@@ -74,6 +74,13 @@ export const purchaseOrderSchema = z.object({
 
 export type PurchaseOrderInput = z.infer<typeof purchaseOrderSchema>;
 
+/** 编辑单据：在新建校验之上要求目标单 id */
+export const purchaseOrderEditSchema = purchaseOrderSchema.extend({
+  orderId: z.string().min(1, "缺少单据 id"),
+});
+
+export type PurchaseOrderEditInput = z.infer<typeof purchaseOrderEditSchema>;
+
 /** 新建卖出单默认销售税率（%），表单可改（可改 0） */
 export const DEFAULT_SALES_TAX_RATE = "10.75";
 
@@ -87,6 +94,7 @@ export const saleOrderSchema = z.object({
   orderDate: dateString,
   customerName: z.string().trim().min(1, "客户必填").max(200, "客户名过长"),
   customerContact: z.string().trim().max(300, "联系方式过长"),
+  customerAddress: z.string().trim().max(300, "地址过长"),
   paymentMethod: z.string().trim().min(1, "付款方式必填").max(100, "付款方式过长"),
   note: z.string().trim().max(500, "备注过长"),
   taxRate: taxRateInput,
@@ -94,6 +102,13 @@ export const saleOrderSchema = z.object({
 });
 
 export type SaleOrderInput = z.infer<typeof saleOrderSchema>;
+
+/** 编辑单据：在新建校验之上要求目标单 id */
+export const saleOrderEditSchema = saleOrderSchema.extend({
+  orderId: z.string().min(1, "缺少单据 id"),
+});
+
+export type SaleOrderEditInput = z.infer<typeof saleOrderEditSchema>;
 
 export const paymentSchema = z.object({
   method: z.enum(["CASH", "CHECK", "ONLINE"]),

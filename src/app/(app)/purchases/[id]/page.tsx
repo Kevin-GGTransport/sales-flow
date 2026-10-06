@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { EditPurchaseOrderDialog } from "@/components/orders/EditOrderDialog";
 import { VoidOrderDialog } from "@/components/orders/VoidOrderDialog";
 import { PaymentsCard } from "@/components/payments/PaymentsCard";
 import { TablePanel } from "@/components/ui/table-panel";
@@ -33,6 +34,7 @@ export default async function PurchaseDetailPage({
         lines: { include: { part: true } },
         createdBy: { select: { name: true } },
         voidedBy: { select: { name: true } },
+        editedBy: { select: { name: true } },
         payments: {
           include: { createdBy: { select: { name: true } } },
           orderBy: { payDate: "asc" },
@@ -62,6 +64,9 @@ export default async function PurchaseDetailPage({
               </Button>
             )}
             {isAdminFlag && order.status === "ACTIVE" && (
+              <EditPurchaseOrderDialog orderId={order.id} />
+            )}
+            {isAdminFlag && order.status === "ACTIVE" && (
               <VoidOrderDialog kind="purchase" orderId={order.id} />
             )}
           </div>
@@ -78,6 +83,12 @@ export default async function PurchaseDetailPage({
           <p>付款方式：{order.paymentMethod || "-"}</p>
           <p>总金额：<span className="font-medium">{formatUSD(order.totalAmount)}</span></p>
           <p>录单人：{order.createdBy.name}</p>
+          {order.editedAt && (
+            <p className="text-muted-foreground">
+              修改于 {formatDateString(order.editedAt)}
+              {order.editedBy?.name ? `（${order.editedBy.name}）` : ""}
+            </p>
+          )}
           {order.note && <p className="md:col-span-2">备注：{order.note}</p>}
           {order.status === "VOID" && (
             <p className="md:col-span-2 text-destructive">
@@ -151,8 +162,9 @@ export default async function PurchaseDetailPage({
 
       {order.status === "ACTIVE" && (
         <p className="text-xs text-muted-foreground">
-          单据保存后不可修改；录错了请「作废」后「复制重开」（<Badge variant="outline">寄卖</Badge>{" "}
-          件不能走买入单）；有付款记录的单须先删付款才能作废。
+          录错了管理员可「修改」（单号不变、留痕）或「作废」后「复制重开」（
+          <Badge variant="outline">寄卖</Badge>{" "}
+          件不能走买入单）；有付款记录的单作废前须先删付款。
         </p>
       )}
     </div>
