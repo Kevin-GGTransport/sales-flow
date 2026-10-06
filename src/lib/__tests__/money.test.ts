@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Prisma } from "@/generated/prisma/client";
-import { formatUSD, lineTotalOf, round2, round4 } from "@/lib/money";
+import { formatUSD, lineTotalOf, round2, round4, taxAmountOf } from "@/lib/money";
 
 const Decimal = Prisma.Decimal;
 
@@ -36,5 +36,18 @@ describe("lineTotalOf", () => {
   it("数量 × 单价 → 两位小数", () => {
     expect(lineTotalOf(3, "10.25").toString()).toBe("30.75");
     expect(lineTotalOf(1, "0.005").toString()).toBe("0.01");
+  });
+});
+
+describe("taxAmountOf", () => {
+  it("10.75% 常规税率", () => {
+    expect(taxAmountOf("100", "10.75").toString()).toBe("10.75");
+    expect(taxAmountOf("37.50", "10.75").toString()).toBe("4.03"); // 4.03125 → 4.03
+  });
+  it("0 税率 → 0", () => {
+    expect(taxAmountOf("100", "0").toString()).toBe("0");
+  });
+  it("half-up 进位", () => {
+    expect(taxAmountOf("10", "10.75").toString()).toBe("1.08"); // 1.075 → 1.08
   });
 });

@@ -39,7 +39,11 @@ export type InvoiceData = {
   customerName: string;
   customerContact: string;
   lines: InvoiceLineData[];
-  total: string; // "150.00"
+  total: string; // "150.00"（含税）
+  /** 以下三项传入且 taxAmount > 0 时，TOTAL 上方渲染 SUBTOTAL / SALES TAX 两行；历史无税单不传或传 0 保持单行 TOTAL */
+  subtotal?: string; // "150.00"
+  taxRate?: string; // "10.75"
+  taxAmount?: string; // "16.13"
 };
 
 const usd = (s: string) => `$${Number(s).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -58,6 +62,9 @@ const styles = StyleSheet.create({
   totalRow: { flexDirection: "row", justifyContent: "flex-end", alignItems: "center", marginTop: 10, gap: 12 },
   totalLabel: { fontFamily: "SourceHanSansCN-Bold", fontSize: 12 },
   totalValue: { fontFamily: "SourceHanSansCN-Bold", fontSize: 14, color: "#15803d" },
+  amountRow: { flexDirection: "row", justifyContent: "flex-end", alignItems: "center", marginTop: 4, gap: 12 },
+  amountLabel: { fontFamily: "SourceHanSansCN-Bold", fontSize: 10 },
+  amountValue: { fontSize: 11 },
   footer: { position: "absolute", bottom: 32, left: 48, right: 48, textAlign: "center", fontSize: 8, color: "#888", borderTopWidth: 1, borderTopColor: "#e5e7eb", paddingTop: 8 },
   colPart: { width: "18%" },
   colDesc: { width: "42%" },
@@ -112,10 +119,29 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
           </View>
         ))}
 
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>TOTAL (USD):</Text>
-          <Text style={styles.totalValue}>{usd(data.total)}</Text>
-        </View>
+        {data.taxAmount && Number(data.taxAmount) > 0 ? (
+          <>
+            <View style={styles.amountRow}>
+              <Text style={styles.amountLabel}>SUBTOTAL (USD):</Text>
+              <Text style={styles.amountValue}>{usd(data.subtotal ?? "0")}</Text>
+            </View>
+            <View style={styles.amountRow}>
+              <Text style={styles.amountLabel}>
+                SALES TAX ({data.taxRate ?? ""}%):
+              </Text>
+              <Text style={styles.amountValue}>{usd(data.taxAmount)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>TOTAL (USD):</Text>
+              <Text style={styles.totalValue}>{usd(data.total)}</Text>
+            </View>
+          </>
+        ) : (
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>TOTAL (USD):</Text>
+            <Text style={styles.totalValue}>{usd(data.total)}</Text>
+          </View>
+        )}
 
         <Text style={styles.footer}>
           Thank you for your business. · {COMPANY.name} · {COMPANY.phone}

@@ -74,12 +74,22 @@ export const purchaseOrderSchema = z.object({
 
 export type PurchaseOrderInput = z.infer<typeof purchaseOrderSchema>;
 
+/** 新建卖出单默认销售税率（%），表单可改（可改 0） */
+export const DEFAULT_SALES_TAX_RATE = "10.75";
+
+/** 销售税率（%）：非负、最多两位小数、≤100；空/缺失 → "0" */
+export const taxRateInput = z.preprocess(
+  (v) => (v == null || String(v).trim() === "" ? "0" : String(v).trim()),
+  moneyString.refine((v) => Number(v) <= 100, "税率不能超过 100%"),
+);
+
 export const saleOrderSchema = z.object({
   orderDate: dateString,
   customerName: z.string().trim().min(1, "客户必填").max(200, "客户名过长"),
   customerContact: z.string().trim().max(300, "联系方式过长"),
   paymentMethod: z.string().trim().min(1, "付款方式必填").max(100, "付款方式过长"),
   note: z.string().trim().max(500, "备注过长"),
+  taxRate: taxRateInput,
   lines: z.array(orderLineInput).min(1, "至少需要一行明细"),
 });
 

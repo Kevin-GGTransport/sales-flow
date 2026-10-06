@@ -39,3 +39,8 @@ export function lineTotalOf(qty: number, unitPrice: MoneyInput): Prisma.Decimal 
   const price = unitPrice instanceof Prisma.Decimal ? unitPrice : new Prisma.Decimal(unitPrice);
   return round2(price.mul(qty));
 }
+
+/** 税额 = 小计 × 税率(%) / 100 → 两位小数 half-up（税率经 zod 校验非负、≤100、最多两位小数） */
+export function taxAmountOf(subtotal: MoneyInput, taxRatePercent: MoneyInput): Prisma.Decimal {
+  return round2(new Prisma.Decimal(subtotal).mul(taxRatePercent).div(100));
+}

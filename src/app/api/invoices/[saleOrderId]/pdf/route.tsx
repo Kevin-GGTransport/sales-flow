@@ -38,6 +38,9 @@ export async function GET(
           unitPrice: l.unitPrice.toString(),
           lineTotal: l.lineTotal.toString(),
         })),
+        subtotal: order.totalAmount.sub(order.taxAmount).toString(),
+        taxRate: order.taxRate.toString(),
+        taxAmount: order.taxAmount.toString(),
         total: order.totalAmount.toString(),
       }}
     />,

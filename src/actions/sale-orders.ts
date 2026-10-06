@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireUser } from "@/lib/guard";
-import { Decimal, lineTotalOf, round4 } from "@/lib/money";
+import { Decimal, lineTotalOf, round4, taxAmountOf } from "@/lib/money";
 import { lockInventoryRows, recomputeByReplay, withTxRetry } from "@/lib/inventory";
 import { nextOrderNo } from "@/lib/order-no";
 import {
@@ -34,6 +34,7 @@ export async function createSaleOrder(
       customerContact: formData.get("customerContact") ?? "",
       paymentMethod: formData.get("paymentMethod") ?? "",
       note: formData.get("note") ?? "",
+      taxRate: formData.get("taxRate") ?? "",
       lines: parseLinesFromForm(formData),
     });
     if (!parsed.success) {
@@ -95,6 +96,11 @@ export async function createSaleOrder(
         };
       });
 
+      // total 此刻 = 小计（Σ lineTotal）；税额与含税总额在事务内用 Decimal 计算
+      const taxRate = new Decimal(input.taxRate);
+      const taxAmount = taxAmountOf(total, taxRate);
+      const grandTotal = total.add(taxAmount);
+
       const order = await tx.saleOrder.create({
         data: {
           orderNo,
@@ -103,7 +109,9 @@ export async function createSaleOrder(
           customerContact: input.customerContact || null,
           paymentMethod: input.paymentMethod,
           note: input.note || null,
-          totalAmount: total,
+          taxRate,
+          taxAmount,
+          totalAmount: grandTotal,
           createdById: user.id,
           lines: { create: lineData },
         },

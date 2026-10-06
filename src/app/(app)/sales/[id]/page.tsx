@@ -47,6 +47,9 @@ export default async function SaleDetailPage({
   const grossProfit = order.lines
     .filter((l) => !l.isConsignment)
     .reduce((sum, l) => sum.add(l.lineTotal.sub(l.costTotal)), new Decimal(0));
+  // 小计 = 含税总额 − 税额（历史单 taxAmount=0，小计即原总额）
+  const subtotal = order.totalAmount.sub(order.taxAmount);
+  const hasTax = order.taxAmount.greaterThan(0);
 
   return (
     <div className="space-y-4">
@@ -90,7 +93,19 @@ export default async function SaleDetailPage({
           <p>客户：{order.customerName}</p>
           {order.customerContact && <p>联系方式：{order.customerContact}</p>}
           <p>付款方式：{order.paymentMethod || "-"}</p>
-          <p>总金额：<span className="font-medium">{formatUSD(order.totalAmount)}</span></p>
+          <p>
+            {hasTax ? "总金额（含税）" : "总金额"}：
+            <span className="font-medium">{formatUSD(order.totalAmount)}</span>
+          </p>
+          {hasTax && (
+            <p>
+              销售税（{order.taxRate.toString()}%）：
+              <span className="font-medium">{formatUSD(order.taxAmount)}</span>
+              <span className="text-muted-foreground">
+                （小计 {formatUSD(subtotal)}）
+              </span>
+            </p>
+          )}
           <p>自营毛利：<span className="font-medium">{formatUSD(grossProfit)}</span></p>
           <p>录单人：{order.createdBy.name}</p>
           {order.invoiceNo && (
@@ -163,18 +178,53 @@ export default async function SaleDetailPage({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow className="border-t-[3px] border-double bg-muted/40">
-              <TableCell colSpan={4} className="text-right font-medium">
-                合计
-              </TableCell>
-              <TableCell className="text-right font-medium tabular-nums">
-                {formatUSD(order.totalAmount)}
-              </TableCell>
-              <TableCell colSpan={2} />
-              <TableCell className="text-right font-medium tabular-nums">
-                {formatUSD(grossProfit)}
-              </TableCell>
-            </TableRow>
+            {hasTax ? (
+              <>
+                <TableRow className="border-t-[3px] border-double bg-muted/40">
+                  <TableCell colSpan={4} className="text-right font-medium">
+                    小计
+                  </TableCell>
+                  <TableCell className="text-right font-medium tabular-nums">
+                    {formatUSD(subtotal)}
+                  </TableCell>
+                  <TableCell colSpan={2} />
+                  <TableCell className="text-right font-medium tabular-nums">
+                    {formatUSD(grossProfit)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="bg-muted/40">
+                  <TableCell colSpan={4} className="text-right font-medium">
+                    销售税（{order.taxRate.toString()}%）
+                  </TableCell>
+                  <TableCell className="text-right font-medium tabular-nums">
+                    {formatUSD(order.taxAmount)}
+                  </TableCell>
+                  <TableCell colSpan={3} />
+                </TableRow>
+                <TableRow className="bg-muted/40">
+                  <TableCell colSpan={4} className="text-right font-medium">
+                    合计（含税）
+                  </TableCell>
+                  <TableCell className="text-right font-medium tabular-nums">
+                    {formatUSD(order.totalAmount)}
+                  </TableCell>
+                  <TableCell colSpan={3} />
+                </TableRow>
+              </>
+            ) : (
+              <TableRow className="border-t-[3px] border-double bg-muted/40">
+                <TableCell colSpan={4} className="text-right font-medium">
+                  合计
+                </TableCell>
+                <TableCell className="text-right font-medium tabular-nums">
+                  {formatUSD(order.totalAmount)}
+                </TableCell>
+                <TableCell colSpan={2} />
+                <TableCell className="text-right font-medium tabular-nums">
+                  {formatUSD(grossProfit)}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TablePanel>

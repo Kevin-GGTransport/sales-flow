@@ -33,6 +33,8 @@ export function OrderLineEditor({
   onChange,
   allowConsignment = false,
   useSuggestedSalePrice = false,
+  taxRate,
+  onTaxRateChange,
 }: {
   parts: PartOption[];
   value: OrderLine[];
@@ -41,6 +43,9 @@ export function OrderLineEditor({
   allowConsignment?: boolean;
   /** 卖出单选中 SKU 时自动带入建议售价；买入单不启用 */
   useSuggestedSalePrice?: boolean;
+  /** 卖出单销售税率（%字符串，如 "10.75"）。传入时合计区渲染 小计/税率输入/含税合计；买入单不传保持原样 */
+  taxRate?: string;
+  onTaxRateChange?: (v: string) => void;
 }) {
   const [parts, setParts] = useState(initialParts);
   // 行级配件查找 O(1)：替代每行每渲染的 parts.find（O(行×配件)）
@@ -57,6 +62,14 @@ export function OrderLineEditor({
     () => value.reduce((sum, r) => sum + money(r.qty) * money(r.unitPrice), 0),
     [value],
   );
+
+  // 销售税预览（展示用；落库以 action 内 Decimal half-up 计算为准）
+  const rateNum = Number(taxRate);
+  const taxPreview =
+    taxRate !== undefined && Number.isFinite(rateNum) && rateNum > 0
+      ? Math.round(total * rateNum) / 100
+      : 0;
+  const grandTotal = total + taxPreview;
 
   function update(key: string, patch: Partial<OrderLine>) {
     onChange(value.map((r) => (r.key === key ? { ...r, ...patch } : r)));
@@ -135,7 +148,7 @@ export function OrderLineEditor({
         );
       })}
 
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex items-start justify-between gap-4 pt-1">
         <div className="flex gap-2">
           <Button
             type="button"
@@ -164,9 +177,38 @@ export function OrderLineEditor({
             }}
           />
         </div>
-        <p className="text-sm font-medium tabular-nums">
-          合计：<span className="text-base">{formatUSDNumber(total)}</span>
-        </p>
+        {taxRate === undefined ? (
+          <p className="text-sm font-medium tabular-nums">
+            合计：<span className="text-base">{formatUSDNumber(total)}</span>
+          </p>
+        ) : (
+          <div className="grid justify-items-end gap-1 text-sm font-medium tabular-nums">
+            <p>
+              小计：<span className="text-base">{formatUSDNumber(total)}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">销售税率(%)</span>
+              <Input
+                name="taxRate"
+                inputMode="decimal"
+                aria-label="销售税率(%)"
+                value={taxRate}
+                onChange={(e) =>
+                  onTaxRateChange?.(e.target.value.replace(/[^\d.]/g, ""))
+                }
+                placeholder="0"
+                className="h-8 w-20 text-right"
+              />
+              <span className="text-muted-foreground">
+                税额：{formatUSDNumber(taxPreview || null)}
+              </span>
+            </div>
+            <p>
+              含税合计：
+              <span className="text-base">{formatUSDNumber(grandTotal)}</span>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "SaleOrder" ADD COLUMN     "taxAmount" DECIMAL(14,2) NOT NULL DEFAULT 0,
+ADD COLUMN     "taxRate" DECIMAL(5,2) NOT NULL DEFAULT 0;

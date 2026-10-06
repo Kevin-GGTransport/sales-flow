@@ -131,7 +131,9 @@ model SaleOrder {
   paymentMethod        String? // 订单约定的付款方式（自由文本；历史单据可为空）
   note                 String?
   status               OrderStatus @default(ACTIVE)
-  totalAmount          Decimal     @default(0) @db.Decimal(14, 2)
+  taxRate              Decimal     @default(0) @db.Decimal(5, 2) // 销售税率（%）：10.75 = 10.75%；0=无税；历史单=0
+  taxAmount            Decimal     @default(0) @db.Decimal(14, 2) // 税额 = round2(Σ lineTotal × taxRate / 100)
+  totalAmount          Decimal     @default(0) @db.Decimal(14, 2) // 含税总额 = Σ lineTotal + taxAmount（应收按此算）
   // 开票：invoiceNo 为 null 即未开票（单一事实来源，不另设状态枚举）
   invoiceNo            String?     @unique // INV-20260910-001
   invoiceDate          DateTime?

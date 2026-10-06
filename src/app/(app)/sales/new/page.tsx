@@ -49,6 +49,7 @@ export default async function NewSalePage({
       customerContact: src.customerContact ?? "",
       paymentMethod: src.paymentMethod ?? "",
       note: src.note ?? "",
+      taxRate: src.taxRate.toString(),
       lines: src.lines.map((l) => ({
         partId: l.partId,
         qty: l.qty,

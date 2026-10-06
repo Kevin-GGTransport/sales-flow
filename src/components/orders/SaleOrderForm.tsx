@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { createSaleOrder } from "@/actions/sale-orders";
 import { todayISO } from "@/lib/format";
+import { DEFAULT_SALES_TAX_RATE } from "@/lib/validation";
 import type { ActionResult } from "@/actions/parts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ export type CopyFromData = {
   customerContact: string;
   paymentMethod: string;
   note: string;
+  taxRate: string;
   lines: { partId: string; qty: number; unitPrice: string }[];
 };
 
@@ -44,6 +46,10 @@ export function SaleOrderForm({
           unitPrice: l.unitPrice,
         }))
       : [newRow()],
+  );
+  // 复制重开忠实带出原单税率（历史单为 0）；新建默认 10.75%
+  const [taxRate, setTaxRate] = useState(
+    copyFrom ? copyFrom.taxRate : DEFAULT_SALES_TAX_RATE,
   );
 
   const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(
@@ -106,6 +112,8 @@ export function SaleOrderForm({
           onChange={setRows}
           allowConsignment
           useSuggestedSalePrice
+          taxRate={taxRate}
+          onTaxRateChange={setTaxRate}
         />
         <input type="hidden" name="lines" value={linesJson} />
       </div>

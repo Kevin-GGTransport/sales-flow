@@ -70,6 +70,16 @@ describe("partSchema 建议售价", () => {
 
 const baseLine = [{ partId: "part-1", qty: 1, unitPrice: "10.00" }];
 
+const baseSale = {
+  orderDate: "2026-09-23",
+  customerName: "客户",
+  customerContact: "",
+  paymentMethod: "现金",
+  note: "",
+  taxRate: "10.75",
+  lines: baseLine,
+};
+
 describe("订单付款方式", () => {
   it("买入单必须填写付款方式并去除首尾空格", () => {
     const parsed = purchaseOrderSchema.safeParse({
@@ -95,5 +105,25 @@ describe("订单付款方式", () => {
         lines: baseLine,
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("卖出单销售税率", () => {
+  it("空/缺失 → 0", () => {
+    for (const taxRate of ["", undefined]) {
+      const parsed = saleOrderSchema.safeParse({ ...baseSale, taxRate });
+      expect(parsed.success).toBe(true);
+      if (parsed.success) expect(parsed.data.taxRate).toBe("0");
+    }
+  });
+
+  it("接受 10.75 并去除首尾空格；拒绝三位小数与超过 100", () => {
+    const ok = saleOrderSchema.safeParse({ ...baseSale, taxRate: " 10.75 " });
+    expect(ok.success).toBe(true);
+    if (ok.success) expect(ok.data.taxRate).toBe("10.75");
+
+    expect(saleOrderSchema.safeParse({ ...baseSale, taxRate: "10.755" }).success).toBe(false);
+    expect(saleOrderSchema.safeParse({ ...baseSale, taxRate: "101" }).success).toBe(false);
+    expect(saleOrderSchema.safeParse({ ...baseSale, taxRate: "-5" }).success).toBe(false);
   });
 });
