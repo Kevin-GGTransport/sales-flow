@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireUser } from "@/lib/guard";
 import { Decimal, lineTotalOf } from "@/lib/money";
@@ -24,7 +23,9 @@ function dayRange(date: Date): { gte: Date; lt: Date } {
   return { gte, lt };
 }
 
-type TxResult = { ok: true; id: string } | { ok: false; error: string };
+type TxResult =
+  | { ok: true; id: string; orderNo: string }
+  | { ok: false; error: string };
 
 export async function createPurchaseOrder(
   _prev: ActionResult | null,
@@ -129,7 +130,7 @@ export async function createPurchaseOrder(
         });
       }
 
-      return { ok: true, id: order.id };
+      return { ok: true, id: order.id, orderNo };
     });
 
     if (!result.ok) return result;
@@ -137,9 +138,9 @@ export async function createPurchaseOrder(
     revalidatePath("/orders");
     revalidatePath("/parts");
     revalidatePath("/inventory");
-    redirect(`/purchases/${result.id}`);
+    // 不再 redirect：弹窗模式由 onSaved 关弹窗，页面模式（复制重开等）自行跳详情
+    return { ok: true, id: result.id, orderNo: result.orderNo };
   } catch (e) {
-    if (e && typeof e === "object" && "digest" in e) throw e; // Next redirect
     return { ok: false, error: e instanceof Error ? e.message : "创建失败" };
   }
 }

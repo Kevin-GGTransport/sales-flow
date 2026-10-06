@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createPurchaseOrder } from "@/actions/purchase-orders";
 import { todayISO } from "@/lib/format";
@@ -35,10 +36,13 @@ export function PurchaseOrderForm({
   parts,
   copyFrom,
   paymentMethodHistory,
+  onSaved,
 }: {
   parts: PartOption[];
   copyFrom?: CopyFromData;
   paymentMethodHistory: string[];
+  /** 弹窗模式：保存成功后回调（关弹窗等），不传则跳转详情页 */
+  onSaved?: (result: { id?: string; orderNo?: string }) => void;
 }) {
   const today = todayISO();
   const [rows, setRows] = useState<OrderLine[]>(() =>
@@ -52,14 +56,24 @@ export function PurchaseOrderForm({
       : [newRow()],
   );
 
+  const router = useRouter();
   const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(
     createPurchaseOrder,
     null,
   );
 
   useEffect(() => {
-    if (state && !state.ok) toast.error(state.error);
-  }, [state]);
+    if (!state) return;
+    if (!state.ok) {
+      toast.error(state.error);
+      return;
+    }
+    if (onSaved) {
+      onSaved(state);
+      return;
+    }
+    if (state.id) router.push(`/purchases/${state.id}`);
+  }, [state, onSaved, router]);
 
   // 只有行数据变化才重算序列化（键入供应商名等字段不再触发）
   const linesJson = useMemo(

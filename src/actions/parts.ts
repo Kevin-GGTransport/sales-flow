@@ -6,7 +6,7 @@ import { requireUser } from "@/lib/guard";
 import { partSchema } from "@/lib/validation";
 
 export type ActionResult =
-  | { ok: true; id?: string }
+  | { ok: true; id?: string; orderNo?: string }
   | { ok: false; error: string };
 
 function parseForm(formData: FormData) {

@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireUser } from "@/lib/guard";
 import { Decimal, lineTotalOf, round4, taxAmountOf } from "@/lib/money";
@@ -25,7 +24,7 @@ export async function createSaleOrder(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  let result: { id: string } | { error: string };
+  let result: { id: string; orderNo: string } | { error: string };
   try {
     const user = await requireUser();
     const parsed = saleOrderSchema.safeParse({
@@ -125,7 +124,7 @@ export async function createSaleOrder(
         });
       }
 
-      return { id: order.id };
+      return { id: order.id, orderNo };
     });
 
     if ("error" in result) return { ok: false, error: result.error };
@@ -133,9 +132,9 @@ export async function createSaleOrder(
     revalidatePath("/orders");
     revalidatePath("/parts");
     revalidatePath("/inventory");
-    redirect(result.id ? `/sales/${result.id}` : "/orders?tab=sales");
+    // 不再 redirect：弹窗模式由 onSaved 关弹窗，页面模式（复制重开等）自行跳详情
+    return { ok: true, id: result.id, orderNo: result.orderNo };
   } catch (e) {
-    if (e && typeof e === "object" && "digest" in e) throw e; // Next redirect
     return { ok: false, error: e instanceof Error ? e.message : "创建失败" };
   }
 }
